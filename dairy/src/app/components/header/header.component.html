@@ -1,0 +1,122 @@
+<mat-toolbar class="header">
+
+    <div class="container-fluid">
+
+        <!-- Верхняя часть -->
+
+        <div class="header-top">
+
+            <!-- Пользователь -->
+
+            <div class="student-info">
+
+                <div class="avatar">
+
+                    <span class="material-symbols-rounded">
+                        school
+                    </span>
+
+                </div>
+
+                <div class="student">
+
+                    <div class="student-name">
+
+                        {{ studentName }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Период обучения -->
+
+            <div class="study-period">
+
+                <span class="period-title">
+
+                    Период обучения
+
+                </span>
+
+                <span class="period">
+
+                    {{ studyPeriod }}
+
+                </span>
+
+            </div>
+
+            <!-- Логотип -->
+
+            <div class="logo-block">
+
+                <img
+                    [src]="logoUrl"
+                    alt="Logo"
+                    class="logo">
+
+                <button
+                    mat-stroked-button
+                    class="logout-btn">
+
+                    <span class="material-symbols-rounded">
+
+                        logout
+
+                    </span>
+
+                    Выйти
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- Нижняя навигация -->
+
+        <div class="navigation">
+
+            <a
+                routerLink="/schedule"
+                routerLinkActive="active">
+
+                <span class="material-symbols-rounded">
+
+                    calendar_month
+
+                </span>
+
+                <span>
+
+                    Расписание занятий
+
+                </span>
+
+            </a>
+
+            <a
+                routerLink="/diary"
+                routerLinkActive="active">
+
+                <span class="material-symbols-rounded">
+
+                    menu_book
+
+                </span>
+
+                <span>
+
+                    Дневник
+
+                </span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</mat-toolbar>

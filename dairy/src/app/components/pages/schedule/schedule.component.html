@@ -1,0 +1,117 @@
+<div class="schedule-page">
+
+    <div class="container-fluid">
+
+        <!-- Верхняя панель -->
+
+        <div class="schedule-toolbar">
+
+            <div class="week-buttons">
+
+                <button class="btn btn-outline-primary">
+
+                    ← Предыдущая
+
+                </button>
+
+                <button class="btn btn-primary">
+
+                    Текущая
+
+                </button>
+
+                <button class="btn btn-outline-primary">
+
+                    Следующая →
+
+                </button>
+
+            </div>
+
+            <div class="current-date">
+
+                {{ currentDate }}
+
+            </div>
+
+            <div class="calendar">
+
+                <input
+                    type="week"
+                    class="form-control">
+
+            </div>
+
+        </div>
+
+        <!-- Таблица -->
+
+        <div class="table-wrapper">
+
+            <table class="table table-hover align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Пара</th>
+
+                        <th>Предмет</th>
+
+                        <th>Преподаватель</th>
+
+                        <th>Аудитория</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr *ngFor="let lesson of lessons">
+
+                        <td>
+
+                            <div>
+
+                                №{{ lesson.number }}
+
+                            </div>
+
+                            <div>
+
+                                {{ lesson.time }}
+
+                            </div>
+
+                        </td>
+
+                        <td>
+
+                            {{ lesson.subject }}
+
+                        </td>
+
+                        <td>
+
+                            {{ lesson.teacher }}
+
+                        </td>
+
+                        <td>
+
+                            {{ lesson.room }}
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

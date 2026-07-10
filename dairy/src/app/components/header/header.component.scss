@@ -1,0 +1,440 @@
+:host {
+    display: block;
+}
+
+/* ==============================
+   HEADER
+============================== */
+
+.header {
+
+    background: linear-gradient(
+        135deg,
+        #1565C0 0%,
+        #1976D2 60%,
+        #1E88E5 100%
+    );
+
+    color: #ffffff;
+
+    padding: 0;
+
+    min-height: 185px;
+
+    display: flex;
+
+    align-items: stretch;
+
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .15);
+
+}
+
+/* Bootstrap container */
+
+.container-fluid{
+
+    padding-left:40px;
+
+    padding-right:40px;
+
+    width:100%;
+
+}
+
+/* ==============================
+   HEADER TOP
+============================== */
+
+.header-top{
+
+    display:grid;
+
+    grid-template-columns:1fr auto 220px;
+
+    align-items:center;
+
+    min-height:120px;
+
+}
+
+/* ==============================
+   USER
+============================== */
+
+.student-info{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+}
+
+.avatar{
+
+    width:72px;
+
+    height:72px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.15);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    backdrop-filter:blur(10px);
+
+    transition:.25s;
+
+}
+
+.avatar:hover{
+
+    transform:scale(1.05);
+
+    background:rgba(255,255,255,.22);
+
+}
+
+.avatar span{
+
+    font-size:42px;
+
+    color:white;
+
+}
+
+.student{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.student-name{
+
+    font-size:28px;
+
+    font-weight:600;
+
+    letter-spacing:.3px;
+
+}
+
+/* ==============================
+   PERIOD
+============================== */
+
+.study-period{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+}
+
+.period-title{
+
+    font-size:15px;
+
+    opacity:.8;
+
+    margin-bottom:8px;
+
+}
+
+.period{
+
+    font-size:22px;
+
+    font-weight:600;
+
+}
+
+/* ==============================
+   LOGO
+============================== */
+
+.logo-block{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:14px;
+
+}
+
+.logo{
+
+    width:82px;
+
+    transition:.25s;
+
+}
+
+.logo:hover{
+
+    transform:scale(1.05);
+
+}
+
+/* ==============================
+   BUTTON
+============================== */
+
+.logout-btn{
+
+    display:flex !important;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:white !important;
+
+    border:1px solid rgba(255,255,255,.4) !important;
+
+    border-radius:12px !important;
+
+    padding:8px 18px !important;
+
+    background:rgba(255,255,255,.08);
+
+    transition:.25s;
+
+}
+
+.logout-btn:hover{
+
+    background:white !important;
+
+    color:#1565C0 !important;
+
+}
+
+.logout-btn span{
+
+    font-size:20px;
+
+}
+
+/* ==============================
+   NAVIGATION
+============================== */
+
+.navigation{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    margin-top:10px;
+
+    padding-bottom:20px;
+
+}
+
+.navigation a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    text-decoration:none;
+
+    color:white;
+
+    padding:14px 26px;
+
+    border-radius:14px;
+
+    font-size:16px;
+
+    font-weight:500;
+
+    transition:.25s;
+
+}
+
+.navigation a:hover{
+
+    background:rgba(255,255,255,.12);
+
+}
+
+.navigation a.active{
+
+    background:white;
+
+    color:#1565C0;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.18);
+
+}
+
+.navigation a.active span{
+
+    color:#1565C0;
+
+}
+
+.navigation span{
+
+    font-size:24px;
+
+}
+
+/* ==============================
+   MATERIAL ICONS
+============================== */
+
+.material-symbols-rounded{
+
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 500,
+        'GRAD' 0,
+        'opsz' 24;
+
+}
+
+/* ==============================
+   TABLET
+============================== */
+
+@media(max-width:992px){
+
+.header{
+
+    min-height:auto;
+
+}
+
+.container-fluid{
+
+    padding-left:20px;
+
+    padding-right:20px;
+
+}
+
+.header-top{
+
+    grid-template-columns:1fr;
+
+    row-gap:30px;
+
+    text-align:center;
+
+    padding-top:25px;
+
+}
+
+.student-info{
+
+    justify-content:center;
+
+}
+
+.logo-block{
+
+    justify-self:center;
+
+}
+
+.navigation{
+
+    justify-content:center;
+
+    flex-wrap:wrap;
+
+}
+
+}
+
+/* ==============================
+   MOBILE
+============================== */
+
+@media(max-width:600px){
+
+.container-fluid{
+
+    padding-left:12px;
+
+    padding-right:12px;
+
+}
+
+.avatar{
+
+    width:58px;
+
+    height:58px;
+
+}
+
+.avatar span{
+
+    font-size:34px;
+
+}
+
+.student-name{
+
+    font-size:20px;
+
+}
+
+.period{
+
+    font-size:18px;
+
+}
+
+.logo{
+
+    width:60px;
+
+}
+
+.navigation{
+
+    flex-direction:column;
+
+    gap:12px;
+
+}
+
+.navigation a{
+
+    width:100%;
+
+    justify-content:center;
+
+}
+
+.logout-btn{
+
+    width:170px;
+
+    justify-content:center;
+
+}
+
+}
