@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,8 +11,9 @@ import { MatButtonModule } from '@angular/material/button';
     CommonModule,
     RouterModule,
     MatToolbarModule,
-    MatButtonModule
-  ],
+    MatButtonModule,
+    NgOptimizedImage
+],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })

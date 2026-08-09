@@ -1,0 +1,558 @@
+:host {
+    display: block;
+}
+
+.diary-page {
+
+    padding: 32px;
+
+    background: #F5F7FC;
+
+    min-height: calc(100vh - 170px);
+
+}
+
+/* ==========================================
+   Заголовок
+========================================== */
+
+.page-title {
+
+    margin: 0 0 24px;
+
+    font-size: 36px;
+
+    font-weight: 700;
+
+    color: #1F2D5C;
+
+}
+
+/* ==========================================
+   Верхняя карточка
+========================================== */
+
+.toolbar-card {
+
+    background: #FFFFFF;
+
+    border-radius: 18px;
+
+    box-shadow: 0 6px 18px rgba(25, 42, 70, .08);
+
+    overflow: hidden;
+
+    margin-bottom: 30px;
+
+}
+
+/* ==========================================
+   Кнопки четвертей
+========================================== */
+
+.quarter-buttons {
+
+    display: flex;
+
+    gap: 16px;
+
+    padding: 22px 24px;
+
+    border-bottom: 1px solid #EDF1F7;
+
+}
+
+.quarter-btn {
+
+    min-width: 170px !important;
+
+    height: 48px !important;
+
+    border-radius: 12px !important;
+
+    font-size: 15px !important;
+
+    font-weight: 500 !important;
+
+}
+
+.quarter-btn.active {
+
+    background: #0B5ED7 !important;
+
+    color: white !important;
+
+}
+
+.quarter-btn:not(.active) {
+
+    background: white;
+
+    border: 1px solid #D9E1F2;
+
+    color: #1F2D5C;
+
+}
+
+.quarter-btn:hover {
+
+    transform: translateY(-2px);
+
+    transition: .2s;
+
+}
+
+/* ==========================================
+   Фильтры
+========================================== */
+
+.filters {
+
+    display: flex;
+
+    gap: 60px;
+
+    padding: 26px 24px;
+
+}
+
+.filter-item {
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+.filter-item label {
+
+    margin-bottom: 10px;
+
+    font-size: 15px;
+
+    color: #42526E;
+
+    font-weight: 500;
+
+}
+
+mat-form-field {
+
+    width: 320px;
+
+}
+
+/* ==========================================
+   Таблица
+========================================== */
+
+.diary-card {
+
+    background: white;
+
+    border-radius: 18px;
+
+    overflow: hidden;
+
+    box-shadow: 0 6px 18px rgba(25,42,70,.08);
+
+}
+
+.diary-table {
+
+    display: grid;
+
+    grid-template-columns:
+        180px
+        repeat(5, minmax(220px,1fr));
+
+}
+
+/* ==========================================
+   Заголовок таблицы
+========================================== */
+
+.subject-header {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background: #F7F9FD;
+
+    font-weight: 600;
+
+    border-right: 1px solid #E7ECF5;
+
+    border-bottom: 1px solid #E7ECF5;
+
+}
+
+.day-header {
+
+    display: flex;
+
+    flex-direction: column;
+
+    border-left: 1px solid #E7ECF5;
+
+    border-bottom: 1px solid #E7ECF5;
+
+    background: #F7F9FD;
+
+}
+
+.day-header>div:first-child {
+
+    padding-top: 14px;
+
+    text-align: center;
+
+    font-weight: 600;
+
+    color: #1F2D5C;
+
+}
+
+.day-header>span {
+
+    text-align: center;
+
+    color: #5F6B84;
+
+    margin-top: 4px;
+
+    margin-bottom: 10px;
+
+}
+
+.day-columns {
+
+    display: grid;
+
+    grid-template-columns: 80px 1fr;
+
+    border-top: 1px solid #E7ECF5;
+
+}
+
+.day-columns span {
+
+    text-align: center;
+
+    padding: 12px 8px;
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+}
+
+.day-columns span:first-child {
+
+    border-right: 1px solid #E7ECF5;
+
+}
+
+/* ==========================================
+   Строки предметов
+========================================== */
+
+.subject-row {
+
+    display: contents;
+
+}
+
+.subject-cell {
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 18px;
+
+    font-weight: 500;
+
+    border-right: 1px solid #EDF1F7;
+
+    border-bottom: 1px solid #EDF1F7;
+
+}
+
+.grade-cell {
+
+    display: grid;
+
+    grid-template-columns: 80px 1fr;
+
+    border-bottom: 1px solid #EDF1F7;
+
+    border-right: 1px solid #EDF1F7;
+
+}
+
+.grade {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 8px;
+
+    border-right: 1px solid #EDF1F7;
+
+    min-height: 72px;
+
+}
+
+.homework {
+
+    display: flex;
+
+    align-items: center;
+
+    min-height: 72px;
+
+    font-size: 14px;
+
+    color: #3E4A66;
+
+}
+
+/* ==========================================
+   Цвета оценок
+========================================== */
+
+.mark {
+
+    font-size: 21px;
+
+    font-weight: 700;
+
+}
+
+.answer {
+
+    color: #1565F9;
+}
+
+.practice {
+
+    color: #14B8D4;
+}
+
+.control {
+
+    color: #F44336;
+}
+
+.home {
+
+    color: #43A047;
+}
+
+.lab {
+
+    color: #FFB300;
+}
+
+.test {
+
+    color: #7E57C2;
+}
+
+.late {
+
+    color: #FB8C00;
+}
+
+.absent {
+
+    color: #D32F2F;
+}
+
+/* ==========================================
+   Легенда
+========================================== */
+
+.legend-card {
+
+    margin-top: 26px;
+
+    padding: 20px;
+
+    background: white;
+
+    border-radius: 18px;
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 26px;
+
+    box-shadow: 0 6px 18px rgba(25,42,70,.08);
+
+}
+
+.legend-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    white-space: nowrap;
+
+}
+
+.dot {
+        width: 12px;
+    
+        height: 12px;
+    
+        min-width: 12px;
+    
+        min-height: 12px;
+    
+        max-width: 12px;
+    
+        max-height: 12px;
+    
+        border-radius: 50%;
+    
+        flex: 0 0 12px;
+    
+}
+
+.dot.answer {
+
+    background: #1565F9;
+}
+
+.dot.practice {
+
+    background: #14B8D4;
+}
+
+.dot.control {
+
+    background: #F44336;
+}
+
+.dot.homework {
+
+    background: #43A047;
+}
+
+.dot.lab {
+
+    background: #FFB300;
+}
+
+.dot.test {
+
+    background: #7E57C2;
+}
+
+.dot.late {
+
+    background: #FB8C00;
+}
+
+.dot.absent {
+
+    background: #D32F2F;
+}
+
+/* ==========================================
+   Планшет
+========================================== */
+
+@media (max-width: 992px) {
+
+    .filters {
+
+        flex-direction: column;
+
+        gap: 24px;
+
+    }
+
+    mat-form-field {
+
+        width: 100%;
+
+    }
+
+    .quarter-buttons {
+
+        flex-wrap: wrap;
+
+    }
+
+}
+
+/* ==========================================
+   Телефон
+========================================== */
+
+@media (max-width: 768px) {
+
+    .diary-page {
+
+        padding: 16px;
+
+    }
+
+    .page-title {
+
+        font-size: 30px;
+
+    }
+
+    .quarter-buttons {
+
+        display: grid;
+
+        grid-template-columns: repeat(2,1fr);
+
+    }
+
+    .quarter-btn {
+
+        width: 100%;
+
+        min-width: auto !important;
+
+    }
+
+    .diary-card {
+
+        overflow-x: auto;
+
+    }
+
+    .diary-table {
+
+        min-width: 1450px;
+
+    }
+
+    .legend-card {
+
+        display: grid;
+
+        grid-template-columns: repeat(2,1fr);
+
+        gap: 16px;
+
+    }
+
+}

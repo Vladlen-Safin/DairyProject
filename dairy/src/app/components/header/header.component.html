@@ -2,23 +2,25 @@
 
     <div class="container-fluid">
 
-        <!-- Верхняя часть -->
+        <!-- Верхняя часть Header -->
 
         <div class="header-top">
 
-            <!-- Пользователь -->
+            <!-- ========================================= -->
+            <!-- Информация об ученике -->
+            <!-- ========================================= -->
 
             <div class="student-info">
 
                 <div class="avatar">
 
                     <span class="material-symbols-rounded">
-                        school
+                        account_circle
                     </span>
 
                 </div>
 
-                <div class="student">
+                <div class="student-block">
 
                     <div class="student-name">
 
@@ -26,40 +28,63 @@
 
                     </div>
 
+                    <!-- При необходимости можно вернуть класс -->
+                    <!--
+                    <div class="student-class">
+                        {{ studentClass }}
+                    </div>
+                    -->
+
                 </div>
 
             </div>
 
+            <!-- ========================================= -->
             <!-- Период обучения -->
+            <!-- ========================================= -->
 
             <div class="study-period">
 
-                <span class="period-title">
+                <div class="period-title">
 
-                    Период обучения
+                    Период обучения:
 
-                </span>
+                </div>
 
-                <span class="period">
+                <div class="period-value">
 
                     {{ studyPeriod }}
 
-                </span>
+                </div>
 
             </div>
 
+            <!-- ========================================= -->
             <!-- Логотип -->
+            <!-- ========================================= -->
 
-            <div class="logo-block">
+            <div class="logo-section">
 
-                <img
-                    [src]="logoUrl"
-                    alt="Logo"
-                    class="logo">
+                <div class="logo-info">
+
+                    <img
+                        class="logo"
+                        src="../../utils/icons/logo.png"
+                        alt="Электронный дневник">
+
+                    <div class="logo-text">
+
+                        <span>ЭЛЕКТРОННЫЙ</span>
+
+                        <span>ДНЕВНИК</span>
+
+                    </div>
+
+                </div>
 
                 <button
-                    mat-stroked-button
-                    class="logout-btn">
+                    mat-button
+                    class="logout-button">
 
                     <span class="material-symbols-rounded">
 
@@ -75,13 +100,16 @@
 
         </div>
 
-        <!-- Нижняя навигация -->
+        <!-- ========================================= -->
+        <!-- Нижнее меню -->
+        <!-- ========================================= -->
 
-        <div class="navigation">
+        <nav class="navigation">
 
             <a
                 routerLink="/schedule"
-                routerLinkActive="active">
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact:true}">
 
                 <span class="material-symbols-rounded">
 
@@ -115,7 +143,7 @@
 
             </a>
 
-        </div>
+        </nav>
 
     </div>
 

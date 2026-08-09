@@ -6,12 +6,14 @@ export const routes: Routes = [
     path: '',
     component: LayoutComponent,
     children: [
+
       {
         path: '',
         loadComponent: () =>
-          import('./components/pages/schedule/schedule.component')
-            .then(m => m.ScheduleComponent)
+          import('./components/pages/Diary/diary.component')
+            .then(m => m.DiaryComponent)
       }
     ]
+
   }
 ];
