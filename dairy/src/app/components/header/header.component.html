@@ -1,0 +1,150 @@
+<mat-toolbar class="header">
+
+    <div class="container-fluid">
+
+        <!-- Верхняя часть Header -->
+
+        <div class="header-top">
+
+            <!-- ========================================= -->
+            <!-- Информация об ученике -->
+            <!-- ========================================= -->
+
+            <div class="student-info">
+
+                <div class="avatar">
+
+                    <span class="material-symbols-rounded">
+                        account_circle
+                    </span>
+
+                </div>
+
+                <div class="student-block">
+
+                    <div class="student-name">
+
+                        {{ studentName }}
+
+                    </div>
+
+                    <!-- При необходимости можно вернуть класс -->
+                    <!--
+                    <div class="student-class">
+                        {{ studentClass }}
+                    </div>
+                    -->
+
+                </div>
+
+            </div>
+
+            <!-- ========================================= -->
+            <!-- Период обучения -->
+            <!-- ========================================= -->
+
+            <div class="study-period">
+
+                <div class="period-title">
+
+                    Период обучения:
+
+                </div>
+
+                <div class="period-value">
+
+                    {{ studyPeriod }}
+
+                </div>
+
+            </div>
+
+            <!-- ========================================= -->
+            <!-- Логотип -->
+            <!-- ========================================= -->
+
+            <div class="logo-section">
+
+                <div class="logo-info">
+
+                    <img
+                        class="logo"
+                        src="../../utils/icons/logo.png"
+                        alt="Электронный дневник">
+
+                    <div class="logo-text">
+
+                        <span>ЭЛЕКТРОННЫЙ</span>
+
+                        <span>ДНЕВНИК</span>
+
+                    </div>
+
+                </div>
+
+                <button
+                    mat-button
+                    class="logout-button">
+
+                    <span class="material-symbols-rounded">
+
+                        logout
+
+                    </span>
+
+                    Выйти
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- Нижнее меню -->
+        <!-- ========================================= -->
+
+        <nav class="navigation">
+
+            <a
+                routerLink="/schedule"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact:true}">
+
+                <span class="material-symbols-rounded">
+
+                    calendar_month
+
+                </span>
+
+                <span>
+
+                    Расписание занятий
+
+                </span>
+
+            </a>
+
+            <a
+                routerLink="/diary"
+                routerLinkActive="active">
+
+                <span class="material-symbols-rounded">
+
+                    menu_book
+
+                </span>
+
+                <span>
+
+                    Дневник
+
+                </span>
+
+            </a>
+
+        </nav>
+
+    </div>
+
+</mat-toolbar>

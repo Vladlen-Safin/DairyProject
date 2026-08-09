@@ -1,0 +1,390 @@
+<div class="diary-page">
+
+    <!-- Заголовок -->
+
+    <h1 class="page-title">
+
+        Дневник
+
+    </h1>
+
+    <!-- Карточка управления -->
+
+    <div class="toolbar-card">
+
+        <!-- Кнопки четвертей -->
+
+        <div class="quarter-buttons">
+
+            <button
+                mat-flat-button
+                class="quarter-btn active">
+
+                1-я четверть
+
+            </button>
+
+            <button
+                mat-stroked-button
+                class="quarter-btn">
+
+                2-я четверть
+
+            </button>
+
+            <button
+                mat-stroked-button
+                class="quarter-btn">
+
+                3-я четверть
+
+            </button>
+
+            <button
+                mat-stroked-button
+                class="quarter-btn">
+
+                4-я четверть
+
+            </button>
+
+            <button
+                mat-stroked-button
+                class="quarter-btn">
+
+                Итоговая четверть
+
+            </button>
+
+        </div>
+
+        <!-- Фильтры -->
+
+        <div class="filters">
+
+            <!-- Период -->
+
+            <div class="filter-item">
+
+                <label>
+
+                    Выберите период
+
+                </label>
+
+                <mat-form-field appearance="outline">
+
+                    <input
+                        matInput
+                        [matDatepicker]="picker">
+
+                    <mat-datepicker-toggle
+                        matSuffix
+                        [for]="picker">
+
+                    </mat-datepicker-toggle>
+
+                    <mat-datepicker #picker>
+
+                    </mat-datepicker>
+
+                </mat-form-field>
+
+            </div>
+
+            <!-- Неделя -->
+
+            <div class="filter-item">
+
+                <label>
+
+                    Учебная неделя
+
+                </label>
+
+                <mat-form-field appearance="outline">
+
+                    <mat-select>
+
+                        <mat-option>
+
+                            Неделя 1
+
+                        </mat-option>
+
+                    </mat-select>
+
+                </mat-form-field>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Таблица -->
+
+    <div class="diary-card">
+
+        <div class="diary-table">
+
+            <!-- Заголовок -->
+
+            <div class="subject-header">
+
+                Предмет
+
+            </div>
+
+            <!-- Понедельник -->
+
+            <div class="day-header">
+
+                <div>
+
+                    Понедельник
+
+                </div>
+
+                <span>
+
+                    01.09
+
+                </span>
+
+                <div class="day-columns">
+
+                    <span>
+
+                        Оценка
+
+                    </span>
+
+                    <span>
+
+                        Домашнее задание /
+                        Комментарий учителя
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Вторник -->
+
+            <div class="day-header">
+
+                <div>
+
+                    Вторник
+
+                </div>
+
+                <span>
+
+                    02.09
+
+                </span>
+
+                <div class="day-columns">
+
+                    <span>
+
+                        Оценка
+
+                    </span>
+
+                    <span>
+
+                        Домашнее задание /
+                        Комментарий учителя
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Среда -->
+
+            <div class="day-header">
+
+                <div>
+
+                    Среда
+
+                </div>
+
+                <span>
+
+                    03.09
+
+                </span>
+
+                <div class="day-columns">
+
+                    <span>
+
+                        Оценка
+
+                    </span>
+
+                    <span>
+
+                        Домашнее задание /
+                        Комментарий учителя
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Четверг -->
+
+            <div class="day-header">
+
+                <div>
+
+                    Четверг
+
+                </div>
+
+                <span>
+
+                    04.09
+
+                </span>
+
+                <div class="day-columns">
+
+                    <span>
+
+                        Оценка
+
+                    </span>
+
+                    <span>
+
+                        Домашнее задание /
+                        Комментарий учителя
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Пятница -->
+
+            <div class="day-header">
+
+                <div>
+
+                    Пятница
+
+                </div>
+
+                <span>
+
+                    05.09
+
+                </span>
+
+                <div class="day-columns">
+
+                    <span>
+
+                        Оценка
+
+                    </span>
+
+                    <span>
+
+                        Домашнее задание /
+                        Комментарий учителя
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Здесь будут строки предметов через *ngFor -->
+
+        </div>
+
+    </div>
+
+    <!-- Легенда -->
+
+    <div class="legend-card">
+
+        <div class="legend-item">
+
+            <span class="dot answer"></span>
+
+            Ответ у доски
+
+        </div>
+
+        <div class="legend-item">
+
+            <span class="dot practice"></span>
+
+            Практическая работа
+
+        </div>
+
+        <div class="legend-item">
+
+            <span class="dot control"></span>
+
+            Контрольная работа
+
+        </div>
+
+        <div class="legend-item">
+
+            <span class="dot homework"></span>
+
+            Домашнее задание
+
+        </div>
+
+        <div class="legend-item">
+
+            <span class="dot lab"></span>
+
+            Лабораторная работа
+
+        </div>
+
+        <div class="legend-item">
+
+            <span class="dot test"></span>
+
+            Проверочная работа
+
+        </div>
+
+        <div class="legend-item">
+
+            <span class="dot late"></span>
+
+            Опоздание (О)
+
+        </div>
+
+        <div class="legend-item">
+
+            <span class="dot absent"></span>
+
+            Отсутствие (Н)
+
+        </div>
+
+    </div>
+
+</div>

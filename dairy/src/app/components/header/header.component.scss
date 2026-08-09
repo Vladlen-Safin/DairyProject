@@ -1,0 +1,523 @@
+:host {
+    display: block;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.header {
+
+    padding: 0 !important;
+
+    min-height: 165px;
+
+    background: #0A4FB8 !important;
+
+    color: #ffffff;
+
+    display: flex;
+
+    align-items: stretch;
+
+    box-shadow: 0 4px 18px rgba(0, 0, 0, .18);
+
+}
+
+/* ==========================================
+   CONTAINER
+========================================== */
+
+.container-fluid {
+
+    width: 100%;
+
+    padding: 0 36px;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+/* ==========================================
+   TOP
+========================================== */
+
+.header-top {
+
+    height: 110px;
+
+    display: grid;
+
+    grid-template-columns: 360px 1fr 320px;
+
+    align-items: center;
+
+}
+
+/* ==========================================
+   USER
+========================================== */
+
+.student-info {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+
+}
+
+.avatar {
+
+    width: 64px;
+
+    height: 64px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.16);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    cursor: pointer;
+
+    transition: all .3s ease;
+
+}
+
+.avatar .material-symbols-rounded {
+
+    font-size: 42px;
+
+    color: white;
+
+    transition: all .3s ease;
+
+}
+
+.avatar:hover{
+
+    background: rgba(255,255,255,.28);
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 8px 20px rgba(0,0,0,.18);
+
+}
+
+.avatar:hover .material-symbols-rounded{
+
+    transform: scale(1.12);
+
+}
+
+.student-block {
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+.student-name {
+
+    font-size: 31px;
+
+    font-weight: 600;
+
+    line-height: 1.2;
+
+}
+
+.student-class {
+
+    margin-top: 4px;
+
+    font-size: 19px;
+
+    opacity: .95;
+
+}
+
+/* ==========================================
+   PERIOD
+========================================== */
+
+.study-period {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+.period-title {
+
+    font-size: 16px;
+
+    opacity: .85;
+
+    margin-bottom: 8px;
+
+}
+
+.period-value {
+
+    font-size: 24px;
+
+    font-weight: 500;
+
+}
+
+/* ==========================================
+   LOGO
+========================================== */
+
+.logo-section {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    justify-content: center;
+
+}
+
+.logo-info {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+
+}
+
+.logo {
+
+    width: 72px;
+
+}
+
+.logo-text {
+
+    display: flex;
+
+    flex-direction: column;
+
+    line-height: 1.1;
+
+}
+
+.logo-text span:first-child {
+
+    font-size: 17px;
+
+    font-weight: 500;
+
+    letter-spacing: .8px;
+
+}
+
+.logo-text span:last-child {
+
+    font-size: 32px;
+
+    font-weight: 700;
+
+    letter-spacing: .5px;
+
+}
+
+/* ==========================================
+   BUTTON
+========================================== */
+
+.logout-button {
+
+    margin-top: 12px !important;
+
+    color: white !important;
+
+    display: flex !important;
+
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 17px;
+
+}
+
+.logout-button:hover {
+
+    background: rgba(255,255,255,.15);
+
+}
+
+.logout-button .material-symbols-rounded {
+
+    font-size: 22px;
+
+}
+
+/* ==========================================
+   NAVIGATION
+========================================== */
+
+.navigation {
+
+    display: flex;
+
+    align-items: flex-end;
+
+    gap: 10px;
+
+    height: 55px;
+
+}
+
+.navigation a {
+
+    height: 55px;
+
+    min-width: 250px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    color: white;
+
+    text-decoration: none;
+
+    font-size: 18px;
+
+    font-weight: 500;
+
+    border-radius: 14px 14px 0 0;
+
+    transition: .25s;
+
+}
+
+.navigation a:hover {
+
+    background: white;
+
+    color: #0A4FB8;
+
+}
+
+.navigation a:hover .material-symbols-rounded {
+
+    color: #0A4FB8;
+
+}
+
+.navigation a.active {
+
+    background: white;
+
+    color: #0A4FB8;
+
+    font-weight: 600;
+
+}
+
+.navigation a.active .material-symbols-rounded {
+
+    color: #0A4FB8;
+
+}
+
+.navigation .material-symbols-rounded {
+
+    font-size: 22px;
+
+}
+
+/* ==========================================
+   MATERIAL ICONS
+========================================== */
+
+.material-symbols-rounded {
+
+    font-variation-settings:
+    'FILL' 0,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
+
+}
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width:992px) {
+
+.header {
+
+    min-height: auto;
+
+}
+
+.container-fluid {
+
+    padding: 18px;
+
+}
+
+.header-top {
+
+    grid-template-columns: 1fr;
+
+    gap: 20px;
+
+    height: auto;
+
+    text-align: center;
+
+}
+
+.student-info {
+
+    justify-content: center;
+
+}
+
+.study-period {
+
+    order: 2;
+
+}
+
+.logo-section {
+
+    order: 3;
+
+    align-items: center;
+
+}
+
+.navigation {
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    height: auto;
+
+    padding-top: 15px;
+
+}
+
+.navigation a {
+
+    min-width: 220px;
+
+}
+
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width:600px) {
+
+.container-fluid {
+
+    padding: 12px;
+
+}
+
+.avatar {
+
+    width: 52px;
+
+    height: 52px;
+
+}
+
+.avatar .material-symbols-rounded {
+
+    font-size: 34px;
+
+}
+
+.student-name {
+
+    font-size: 21px;
+
+}
+
+.period-title {
+
+    font-size: 14px;
+
+}
+
+.period-value {
+
+    font-size: 17px;
+
+}
+
+.logo {
+
+    width: 54px;
+
+}
+
+.logo-text span:first-child {
+
+    font-size: 11px;
+
+}
+
+.logo-text span:last-child {
+
+    font-size: 18px;
+
+}
+
+.navigation {
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    align-items: stretch;
+
+}
+
+.navigation a {
+
+    width: 100%;
+
+    min-width: auto;
+
+    border-radius: 12px;
+
+}
+
+}
