@@ -1,12 +1,49 @@
-<div clas="login-wrapper">
-  <form class="login-wrapper__form">
+<div class="login-wrapper">
+  <form class="login-wrapper__form" [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="login-wrapper__item">
       <label>Логин <mark>*</mark></label>
-      <input placeholder="Введите логин" />
+      <input
+        formControlName="login"
+        placeholder="Введите логин"
+        [class.login-wrapper__input--invalid]="loginControl.invalid && loginControl.touched"
+        autocomplete="username"
+      />
+      <span class="login-wrapper__hint" *ngIf="loginControl.invalid && loginControl.touched">
+        Введите логин
+      </span>
     </div>
+
     <div class="login-wrapper__item">
       <label>Пароль <mark>*</mark></label>
-      <input placeholder="Введите пароль" />
+      <input
+        type="password"
+        formControlName="password"
+        placeholder="Введите пароль"
+        [class.login-wrapper__input--invalid]="passwordControl.invalid && passwordControl.touched"
+        autocomplete="current-password"
+      />
+      <span class="login-wrapper__hint" *ngIf="passwordControl.invalid && passwordControl.touched">
+        Минимум 4 символа
+      </span>
     </div>
+
+    <div class="login-wrapper__error" *ngIf="errorMessage && !isLockedOut">
+      {{ errorMessage }}
+    </div>
+
+    <div class="login-wrapper__error" *ngIf="isLockedOut">
+      Слишком много попыток. Повторите через {{ lockoutSecondsLeft }} сек.
+    </div>
+
+    <div class="login-wrapper__attempts" *ngIf="!isLockedOut && attemptsLeft < 5">
+      Осталось попыток: {{ attemptsLeft }}
+    </div>
+
+    <button
+      type="submit"
+      [disabled]="form.invalid || isSubmitting || isLockedOut"
+    >
+      {{ isSubmitting ? 'Входим...' : 'Войти' }}
+    </button>
   </form>
 </div>

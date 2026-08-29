@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './components/layout/layout.component';
 import { AuthComponent } from './components/pages/Auth/auth.component';
+import { authGuard } from './guards/auth.guard';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -10,6 +12,7 @@ export const routes: Routes = [
   {
     path: 'dairy',
     component: LayoutComponent,
+    canActivate: [authGuard, roleGuard(['student'])],
     children: [
       {
         path: '',

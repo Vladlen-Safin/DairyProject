@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<filelist creation="2026-08-19T01:04:09">
+	<MessageNo>3238</MessageNo>
+	<files>
+		<file>
+			<filename>book.xml</filename>
+			<type>book</type>
+		</file>
+		<file>
+			<filename>groups.xml</filename>
+			<type>groups</type>
+		</file>
+		<file>
+			<filename>events.xml</filename>
+			<type>events</type>
+		</file>
+		<file>
+			<filename>final_marks.xml</filename>
+			<type>final_marks</type>
+		</file>
+	</files>
+</filelist>
