@@ -1,0 +1,28 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { DiaryEvent, FinalEvent, MeResponse } from '../../models/diary.models';
+
+/** Чтение данных дневника с бэкенда (/api/*). Bearer-токен добавляет authInterceptor. */
+@Injectable({ providedIn: 'root' })
+export class DataService {
+  private http = inject(HttpClient);
+  private base = environment.apiUrl;
+
+  me(): Observable<MeResponse> {
+    return this.http.get<MeResponse>(`${this.base}/me`);
+  }
+
+  events(group: number, from: string, to: string): Observable<DiaryEvent[]> {
+    return this.http.get<DiaryEvent[]>(`${this.base}/events`, {
+      params: { group, from, to },
+    });
+  }
+
+  finalMarks(group: number, pupil?: number): Observable<FinalEvent[]> {
+    const params: Record<string, string | number> = { group };
+    if (pupil != null) params['pupil'] = pupil;
+    return this.http.get<FinalEvent[]>(`${this.base}/final-marks`, { params });
+  }
+}

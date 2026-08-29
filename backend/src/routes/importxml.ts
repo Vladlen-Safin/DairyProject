@@ -111,6 +111,9 @@ import { config } from "../config.js";
 import { db } from "../db/index.js";
 import { readFileList } from "../xml/filelist.js";
 import { importEventsFile } from "../import/eventsFileImporter.js";
+import { importBookFile } from "../import/bookImporter.js";
+import { importGroupsFile } from "../import/groupsImporter.js";
+import { importFinalMarksFile } from "../import/finalMarksImporter.js";
 import { upsertFileResult, findMessageResult, allResultsForMessage } from "../import/resultsLog.js";
 import {
   downloadFilelist,
@@ -154,6 +157,14 @@ export async function importXmlHandler(req: Request, res: Response) {
   let overallContinue = false;
 
   for (const entry of filelist.files) {
+    // book / groups / final_marks импортируются за один проход. Если по этому файлу
+    // в рамках сообщения уже есть запись результата (например, из-за CONTINUE по
+    // events на прошлой итерации) - повторно не обрабатываем, чтобы не задваивать
+    // счётчики и лог ошибок. events так не пропускаем - у него свой чекпоинт.
+    if (entry.type !== "events" && (await findMessageResult(db, entry.filename, messageno))) {
+      continue;
+    }
+
     let fileResult: { success: number; fail: number; errorLog: string[]; done: boolean } | false;
 
     switch (entry.type) {
@@ -166,9 +177,13 @@ export async function importXmlHandler(req: Request, res: Response) {
         );
         break;
       case "book":
+        fileResult = await importBookFile(config.xmlLocalCacheDir, entry.filename, messageno);
+        break;
       case "groups":
+        fileResult = await importGroupsFile(config.xmlLocalCacheDir, entry.filename, messageno);
+        break;
       case "final_marks":
-        fileResult = { success: 0, fail: 0, errorLog: [], done: true };
+        fileResult = await importFinalMarksFile(config.xmlLocalCacheDir, entry.filename, messageno);
         break;
       default:
         fileResult = false;

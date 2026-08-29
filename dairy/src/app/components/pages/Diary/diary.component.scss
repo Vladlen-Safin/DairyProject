@@ -556,3 +556,85 @@ mat-form-field {
     }
 
 }
+/* ==========================================
+   Наполнение сетки данными из API
+========================================== */
+
+.filter-item select {
+    height: 46px;
+    min-width: 260px;
+    padding: 0 14px;
+    font-size: 15px;
+    border: 1px solid #bfc8d4;
+    border-radius: 10px;
+    background: #fff;
+    color: #1F2D5C;
+}
+
+.week-table {
+    grid-template-columns: 180px repeat(5, minmax(200px, 1fr));
+}
+
+.final-table {
+    grid-template-columns: 260px 1fr;
+}
+
+.day-cell {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 8px;
+    padding: 14px;
+    border-right: 1px solid #EDF1F7;
+    border-bottom: 1px solid #EDF1F7;
+    min-height: 84px;
+}
+
+.day-cell.missing {
+    background: #FDECEC;
+}
+
+.day-cell .marks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.mark-cell {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid #EDF1F7;
+}
+
+.mark-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    background: #1565F9;
+}
+
+.mark-chip.answer   { background: #1565F9; }
+.mark-chip.practice { background: #14B8D4; }
+.mark-chip.control  { background: #F44336; }
+.mark-chip.homework { background: #43A047; }
+.mark-chip.lab      { background: #FFB300; }
+.mark-chip.test     { background: #7E57C2; }
+.mark-chip.absent   { background: #D32F2F; }
+
+.day-cell .hw {
+    font-size: 13px;
+    color: #3E4A66;
+}
+
+.day-cell .hw .note {
+    margin-top: 4px;
+    color: #8a5a00;
+    font-style: italic;
+}

@@ -31,6 +31,10 @@ export const config = {
   importTimeBudgetMs: Number(process.env.IMPORT_TIME_BUDGET_MS ?? 20000),
   importApiToken: process.env.IMPORT_API_TOKEN || null,
 
+  // Секрет подписи JWT для демо-авторизации фронтенда.
+  // В проде обязательно задать JWT_SECRET в окружении.
+  jwtSecret: process.env.JWT_SECRET || "dev-insecure-secret-change-me",
+
   ftp: {
     host: required("FTP_HOST"),
     port: Number(process.env.FTP_PORT ?? 21),

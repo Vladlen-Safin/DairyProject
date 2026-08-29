@@ -59,7 +59,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.resetAttempts();
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/diary';
           this.router.navigateByUrl(returnUrl);
         },
         error: (err) => {

@@ -333,3 +333,35 @@
 }
 
 }
+/* ==========================================
+   Данные из API + выбор дня недели
+========================================== */
+
+.day-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 4px 0 18px;
+}
+
+.day-buttons button {
+    height: 42px;
+    padding: 0 16px;
+    border: 1px solid #bfc8d4;
+    border-radius: 10px;
+    background: #fff;
+    color: #000c51;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.day-buttons button.active {
+    background: #0B5ED7;
+    border-color: #0B5ED7;
+    color: #fff;
+}
+
+.schedule-empty {
+    padding: 24px;
+    color: #5F6B84;
+}

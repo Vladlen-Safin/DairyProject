@@ -1,5 +1,6 @@
 # Node
 /node_modules
+/dist
 /xml-cache
 npm-debug.log
 yarn-error.log

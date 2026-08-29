@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of, BehaviorSubject } from 'rxjs';
+import { Observable, tap, catchError, of, BehaviorSubject, switchMap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthUser, LoginRequest, LoginResponse } from '../../models/auth.models';
 
@@ -41,6 +41,17 @@ export class AuthService {
           this.accessToken = res.accessToken;
           this.isAuthenticated.set(true);
         }),
+        // После перезагрузки страницы currentUser теряется - восстанавливаем его
+        // через /api/me, иначе roleGuard не пропустит на защищённые роуты.
+        switchMap((res) =>
+          this.http.get<AuthUser>(`${environment.apiUrl}/me`).pipe(
+            tap((me) =>
+              this.currentUserSubject.next({ id: me.id, login: me.login, role: me.role })
+            ),
+            map(() => res),
+            catchError(() => of(res))
+          )
+        ),
         catchError(() => {
           this.clearSession();
           return of(null);
