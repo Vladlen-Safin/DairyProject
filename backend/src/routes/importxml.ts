@@ -127,7 +127,17 @@ const NOT_FOUND_MESSAGE = "Не найден файл, либо номер со�
 
 export async function importXmlHandler(req: Request, res: Response) {
   res.type("text/plain; charset=utf-8");
+  try {
+    await handleImport(req, res);
+  } catch (err) {
+    // Любая необработанная ошибка импорта (битые данные в выгрузке, обрыв FTP и т.п.)
+    // не должна ронять весь сервер - логируем и отвечаем ERROR.
+    console.error("[importxml] необработанная ошибка:", err);
+    if (!res.headersSent) res.status(500).send("ERROR");
+  }
+}
 
+async function handleImport(req: Request, res: Response) {
   if (config.importApiToken) {
     const provided = req.header("x-import-token");
     if (provided !== config.importApiToken) {

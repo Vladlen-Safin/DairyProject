@@ -89,8 +89,8 @@ CREATE TABLE ediary_lessons (
     shift         INTEGER NOT NULL REFERENCES ediary_shifts(id) ON DELETE CASCADE,
     lessonnumber  INTEGER NOT NULL,
     weekday       INTEGER NOT NULL,
-    timebegin     VARCHAR(5) NOT NULL,
-    timeend       VARCHAR(5) NOT NULL
+    timebegin     VARCHAR(10) NOT NULL,
+    timeend       VARCHAR(10) NOT NULL
 );
 CREATE INDEX idx_lessons_shift ON ediary_lessons (shift, weekday, lessonnumber);
 
@@ -160,7 +160,7 @@ CREATE TABLE ediary_marks (
     id       SERIAL  PRIMARY KEY,
     event    INTEGER NOT NULL REFERENCES ediary_events(id) ON DELETE CASCADE,
     pupil    INTEGER NOT NULL REFERENCES ediary_pupils(id) ON DELETE CASCADE,
-    value    VARCHAR(5) NOT NULL,
+    value    VARCHAR(20) NOT NULL, -- не только "5"/"4": бывает "н/а", "осв", "зачёт", "5 (5)" и т.п.
     comment  TEXT
     -- намеренно без UNIQUE(event, pupil): в реальной выгрузке 1С один и тот же
     -- ученик может иметь несколько оценок за один урок (см. пример events.xml)
@@ -196,7 +196,7 @@ CREATE TABLE ediary_final_marks (
     id      SERIAL  PRIMARY KEY,
     event   INTEGER NOT NULL REFERENCES ediary_final_events(id) ON DELETE CASCADE,
     pupil   INTEGER NOT NULL REFERENCES ediary_pupils(id) ON DELETE CASCADE,
-    value   VARCHAR(5) NOT NULL
+    value   VARCHAR(20) NOT NULL -- аналогично ediary_marks.value: возможны текстовые оценки
 );
 CREATE INDEX idx_final_marks_event_pupil ON ediary_final_marks (event, pupil);
 

@@ -157,7 +157,23 @@ export async function importEventsBatch(
 
   if (commentRows.length) await db.insertInto("ediary_comments").values(commentRows).execute();
   if (markRows.length) await db.insertInto("ediary_marks").values(markRows).execute();
-  if (missingRows.length) await db.insertInto("ediary_missings").values(missingRows).execute();
+
+  // В выгрузке 1С один и тот же ученик может встретиться в <missing> одного события
+  // несколько раз - на ediary_missings есть UNIQUE(event, pupil), поэтому дедуплицируем.
+  if (missingRows.length) {
+    const seen = new Set<string>();
+    const uniqueMissings = missingRows.filter((r) => {
+      const key = `${r.event}:${r.pupil}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    await db
+      .insertInto("ediary_missings")
+      .values(uniqueMissings)
+      .onConflict((oc) => oc.columns(["event", "pupil"]).doNothing())
+      .execute();
+  }
 
   return stats;
 }
