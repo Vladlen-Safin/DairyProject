@@ -1,5 +1,6 @@
 export interface TermInfo {
   id: number;
+  ext_id: string;
   name: string;
   date_start: string;
   date_end: string;

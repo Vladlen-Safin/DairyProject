@@ -1,0 +1,28 @@
+:host { display: block; }
+.grades-page { padding: 32px; background: #F5F7FC; min-height: calc(100vh - 170px); color: #1F2D5C; }
+.page-title { margin: 0 0 24px; font-size: 36px; font-weight: 700; }
+.grades-card, .status-card { background: #FFFFFF; border-radius: 18px; box-shadow: 0 6px 18px rgba(25, 42, 70, .08); overflow: hidden; }
+.status-card, .empty-state { padding: 24px; color: #42526E; }
+.card-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 22px 24px; border-bottom: 1px solid #E7ECF5; }
+.card-heading h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.card-heading span { font-size: 14px; color: #5F6B84; }
+.table-scroll { overflow-x: auto; }
+.table-scroll:focus-visible { outline: 3px solid #80ACEE; outline-offset: -3px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 18px 24px; text-align: center; border-right: 1px solid #E7ECF5; border-bottom: 1px solid #E7ECF5; }
+thead th { background: #F7F9FD; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.subject { text-align: left; min-width: 220px; }
+tbody th { font-size: 15px; font-weight: 500; }
+th:last-child, td:last-child { border-right: 0; }
+tbody tr:last-child > * { border-bottom: 0; }
+.final-column { background: #F0F5FF; }
+.year-column { background: #F7F9FD; }
+.grade { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; min-height: 34px; padding: 4px 8px; border-radius: 8px; font-size: 16px; font-weight: 700; background: #EDF4FF; color: #0B5ED7; white-space: nowrap; }
+.final-grade { background: #1565F9; color: white; }
+.grade.empty { background: transparent; color: #8793A8; font-weight: 400; }
+@media (max-width: 768px) {
+  .grades-page { padding: 16px; }
+  .page-title { font-size: 30px; }
+  .card-heading { padding: 18px; }
+  th, td { padding: 14px 18px; }
+}

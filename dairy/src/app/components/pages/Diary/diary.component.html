@@ -6,6 +6,7 @@
   } @else if (error) {
     <div class="toolbar-card">{{ error }}</div>
   } @else {
+    <!-- Прежняя навигация по четвертям: сохранена для версии с адаптацией.
     <div class="toolbar-card">
       <div class="quarter-buttons">
         @for (q of quarters; track q.id) {
@@ -32,7 +33,41 @@
       }
     </div>
 
-    @if (selectedQuarter.id === 'final') {
+    -->
+
+    <div class="toolbar-card month-toolbar">
+      <div class="period-section">
+        <div class="period-label">Месяц</div>
+        <div class="period-chips" role="group" aria-label="Месяц учебного года">
+          @for (month of months; track month.id) {
+            <button type="button" class="period-chip"
+                    [class.active]="!showFinal && month === selectedMonth"
+                    [attr.aria-pressed]="!showFinal && month === selectedMonth"
+                    (click)="selectMonth(month)">
+              {{ month.name }} <!--<span class="chip-year">{{ month.year }}</span> -->
+            </button>
+          }
+          <button type="button" class="period-chip" [class.active]="showFinal"
+                  [attr.aria-pressed]="showFinal" (click)="selectFinal()">Итоговая</button>
+        </div>
+      </div>
+      @if (!showFinal && selectedMonth) {
+        <div class="period-section week-section">
+          <div class="period-label">Учебная неделя · {{ selectedMonth.name }} {{ selectedMonth.year }}</div>
+          <div class="period-chips" role="group" aria-label="Учебная неделя">
+            @for (week of weeks; track week.from; let i = $index) {
+              <button type="button" class="period-chip week-chip"
+                      [class.active]="week === selectedWeek"
+                      [attr.aria-pressed]="week === selectedWeek"
+                      [attr.aria-label]="'Неделя с ' + week.from + ' по ' + week.to"
+                      (click)="onWeekChange(i)">{{ week.label }}</button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (showFinal) {
       <!-- Итоговые оценки -->
       <div class="diary-card">
         <div class="diary-table final-table">

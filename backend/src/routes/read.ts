@@ -41,7 +41,7 @@ readRouter.get("/me", requireAuth, async (req: AuthedRequest, res: Response) => 
     schoolyear_start: string;
     schoolyear_end: string;
   } | null = null;
-  let terms: { id: number; name: string; date_start: string; date_end: string }[] = [];
+  let terms: { id: number; ext_id: string; name: string; date_start: string; date_end: string }[] = [];
 
   if (account) {
     group =
@@ -66,7 +66,7 @@ readRouter.get("/me", requireAuth, async (req: AuthedRequest, res: Response) => 
       terms = await db
         .selectFrom("ediary_groups_terms as gt")
         .innerJoin("ediary_terms as t", "t.id", "gt.term")
-        .select(["t.id", "t.name", "gt.date_start", "gt.date_end"])
+        .select(["t.id", "t.ext_id", "t.name", "gt.date_start", "gt.date_end"])
         .where("gt.group_id", "=", group.id)
         .orderBy("gt.date_start")
         .execute();
@@ -351,6 +351,42 @@ readRouter.get("/my-events", requireAuth, async (req: AuthedRequest, res: Respon
       missing: missingEvents.has(e.id),
     })),
   );
+});
+
+/** Оценки текущего ученика за учебный год, включая прежние группы и подгруппы. */
+readRouter.get("/my-final-marks", requireAuth, async (req: AuthedRequest, res: Response) => {
+  const schoolyear = asId(req.query.schoolyear);
+  if (schoolyear === null) {
+    return res.status(400).json({ error: "нужен параметр schoolyear" });
+  }
+  const account = await db
+    .selectFrom("ediary_pupils_accounts as pa")
+    .innerJoin("ediary_pupils as p", "p.id", "pa.pupil")
+    .select(["p.id", "p.ext_id"])
+    .where("pa.uid", "=", req.auth!.userId)
+    .executeTakeFirst();
+  if (!account) {
+    return res.status(404).json({ error: "к учётной записи не привязан ученик" });
+  }
+  const rows = await db
+    .selectFrom("ediary_final_marks as fm")
+    .innerJoin("ediary_final_events as fe", "fe.id", "fm.event")
+    .innerJoin("ediary_subjects as s", "s.id", "fe.subject")
+    .select(["fe.id", "fe.ext_id", "fe.type", "fe.term_ext_id", "fe.group_id", "s.name as subject", "fm.value"])
+    .where("fm.pupil", "=", account.id)
+    .where("fe.schoolyear", "=", schoolyear)
+    .orderBy("fe.id")
+    .orderBy("fm.id")
+    .execute();
+  const events = new Map<number, Omit<(typeof rows)[number], "value"> & {
+    marks: { pupil: number; pupil_ext_id: string; value: string }[];
+  }>();
+  for (const { value, ...event } of rows) {
+    const item = events.get(event.id) ?? { ...event, marks: [] };
+    item.marks.push({ pupil: account.id, pupil_ext_id: account.ext_id, value });
+    events.set(event.id, item);
+  }
+  res.json([...events.values()]);
 });
 
 /**

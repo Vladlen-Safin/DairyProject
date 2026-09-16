@@ -1,0 +1,45 @@
+<div class="grades-page">
+  <h1 class="page-title">Итоговые оценки</h1>
+  @if (loading) {
+    <div class="status-card" role="status">Загрузка оценок…</div>
+  } @else if (error) {
+    <div class="status-card" role="alert">{{ error }}</div>
+  } @else {
+    <div class="grades-card">
+      <div class="card-heading">
+        <h2>Успеваемость по предметам</h2>
+        <span>{{ schoolyear }}</span>
+      </div>
+      @if (rows.length) {
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Оценки по четвертям, годовые и итоговые оценки">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col" class="subject">Предмет</th>
+                @for (term of terms; track term.id) {
+                  <th scope="col">{{ term.name }}</th>
+                }
+                <th scope="col" class="year-column">Годовая оценка</th>
+                <th scope="col" class="final-column">Итоговая оценка</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows; track row.subject) {
+                <tr>
+                  <th scope="row" class="subject">{{ row.subject }}</th>
+                  @for (mark of row.terms; track $index) {
+                    <td><span class="grade" [class.empty]="mark === '—'">{{ mark }}</span></td>
+                  }
+                  <td class="year-column"><span class="grade" [class.empty]="row.year === '—'">{{ row.year }}</span></td>
+                  <td class="final-column"><span class="grade final-grade" [class.empty]="row.final === '—'">{{ row.final }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state">За этот учебный год пока нет четвертных, годовых или итоговых оценок.</div>
+      }
+    </div>
+  }
+</div>

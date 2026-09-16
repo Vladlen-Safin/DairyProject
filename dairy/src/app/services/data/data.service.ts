@@ -21,6 +21,13 @@ export class DataService {
     });
   }
 
+  /** Все группы текущего ученика, строго в пределах выбранного учебного года. */
+  myFinalMarks(schoolyear: number): Observable<FinalEvent[]> {
+    return this.http.get<FinalEvent[]>(`${this.base}/my-final-marks`, {
+      params: { schoolyear },
+    });
+  }
+
   finalMarks(group: number, pupil?: number): Observable<FinalEvent[]> {
     const params: Record<string, string | number> = { group };
     if (pupil != null) params['pupil'] = pupil;

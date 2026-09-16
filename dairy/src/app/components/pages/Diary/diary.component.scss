@@ -2,6 +2,53 @@
     display: block;
 }
 
+.period-section {
+    padding: 20px 24px;
+}
+
+.week-section {
+    border-top: 1px solid #EDF1F7;
+    background: #FAFBFE;
+}
+
+.period-label {
+    margin-bottom: 12px;
+    color: #42526E;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.period-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.period-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 1px solid #D9E1F2;
+    border-radius: 24px;
+    background: #FFFFFF;
+    color: #1F2D5C;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, color .15s;
+
+    &:hover { background: #EDF4FF; border-color: #0B5ED7; }
+    &.active { background: #0B5ED7; border-color: #0B5ED7; color: #FFFFFF; }
+    &:focus-visible { outline: 3px solid #80ACEE; outline-offset: 3px; }
+}
+
+.chip-year { font-size: 12px; opacity: .8; }
+.week-chip { min-width: 100px; font-variant-numeric: tabular-nums; }
+
 .diary-page {
 
     padding: 32px;

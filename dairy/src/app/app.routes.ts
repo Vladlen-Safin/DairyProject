@@ -28,6 +28,12 @@ export const routes: Routes = [
             (m) => m.ScheduleComponent
           ),
       },
+      {
+         path: 'final-grade',
+        canActivate: [roleGuard(['student'])],
+        loadComponent: () =>
+          import('./components/pages/final-grade/final-grade.component').then((m) => m.FinalGradeComponent),
+      }
     ],
   },
   { path: '**', redirectTo: '' },

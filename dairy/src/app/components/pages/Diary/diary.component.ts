@@ -18,6 +18,13 @@ interface QuarterOption {
   to?: string;
 }
 
+interface MonthOption {
+  id: string;
+  name: string;
+  year: string;
+  weeks: WeekOption[];
+}
+
 interface DiaryCell {
   date: string;
   marks: { value: string; comment: string | null }[];
@@ -71,6 +78,10 @@ export class DiaryComponent implements OnInit {
   quarters: QuarterOption[] = [];
   selectedQuarter!: QuarterOption;
 
+  months: MonthOption[] = [];
+  selectedMonth: MonthOption | null = null;
+  showFinal = false;
+
   weeks: WeekOption[] = [];
   selectedWeek: WeekOption | null = null;
 
@@ -105,13 +116,56 @@ export class DiaryComponent implements OnInit {
           this.allEvents = events;
           this.finals = finals;
           this.buildQuarters(me);
-          this.selectQuarter(this.currentQuarter());
+          // Прежняя инициализация для навигации по четвертям:
+          // this.selectQuarter(this.currentQuarter());
+          this.buildMonths(me.group.schoolyear_start, me.group.schoolyear_end);
+          const today = new Date().toISOString().slice(0, 10);
+          const month = this.months.find((m) => m.weeks.some((w) => w.from <= today && today <= w.to))
+            ?? this.months[0];
+          if (month) this.selectMonth(month);
         },
         error: (err) => {
           this.loading = false;
           this.error = err?.error?.error || 'Не удалось загрузить дневник';
         },
       });
+  }
+
+  private buildMonths(from: string, to: string): void {
+    const months = new Map<string, MonthOption>();
+    const formatter = new Intl.DateTimeFormat('ru-RU', { month: 'long', timeZone: 'UTC' });
+    for (let mon = mondayOf(from); mon <= to; mon = addDays(mon, 7)) {
+      // Начальную неполную неделю сохраняем в первом месяце учебного года.
+      const id = (mon < from ? from : mon).slice(0, 7);
+      let month = months.get(id);
+      if (!month) {
+        const name = formatter.format(new Date(`${id}-01T00:00:00Z`));
+        month = { id, name: name[0].toUpperCase() + name.slice(1), year: id.slice(0, 4), weeks: [] };
+        months.set(id, month);
+      }
+      const sun = addDays(mon, 6);
+      const label = mon.slice(0, 7) === sun.slice(0, 7)
+        ? `${mon.slice(8)}–${sun.slice(8)}`
+        : `${ddmm(mon)} – ${ddmm(sun)}`;
+      month.weeks.push({ label, from: mon, to: sun });
+    }
+    this.months = [...months.values()];
+  }
+
+  selectMonth(month: MonthOption): void {
+    this.showFinal = false;
+    this.selectedMonth = month;
+    this.weeks = month.weeks;
+    const today = new Date().toISOString().slice(0, 10);
+    this.selectedWeek = this.weeks.find((w) => w.from === this.selectedWeek?.from)
+      ?? this.weeks.find((w) => w.from <= today && today <= w.to)
+      ?? this.weeks[0] ?? null;
+    this.buildRows();
+  }
+
+  selectFinal(): void {
+    this.showFinal = true;
+    this.buildFinalRows();
   }
 
   private buildQuarters(me: MeResponse): void {
