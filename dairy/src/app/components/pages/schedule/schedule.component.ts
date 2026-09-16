@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import { forkJoin, of, switchMap } from 'rxjs';
 
 import { DataService } from '../../../services/data/data.service';
-import { DiaryEvent, MeResponse } from '../../../models/diary.models';
+import { MeResponse, MyEvent } from '../../../models/diary.models';
 
 interface Lesson {
+  eventId: number;
   number: number;
   time: string;
   subject: string;
@@ -85,7 +86,7 @@ export class ScheduleComponent implements OnInit {
 
   private me: MeResponse | null = null;
   private monday = mondayOf(new Date());
-  private weekEvents: DiaryEvent[] = [];
+  private weekEvents: MyEvent[] = [];
 
   ngOnInit(): void {
     const todayIdx = (new Date().getUTCDay() + 6) % 7; // 0=пн
@@ -97,7 +98,7 @@ export class ScheduleComponent implements OnInit {
       .pipe(
         switchMap((me) => {
           this.me = me;
-          if (!me.group) return of({ me, events: [] as DiaryEvent[] });
+          if (!me.group) return of({ me, events: [] as MyEvent[] });
           return forkJoin({ me: of(me), events: this.loadWeek() });
         })
       )
@@ -121,7 +122,8 @@ export class ScheduleComponent implements OnInit {
   private loadWeek() {
     const from = iso(this.monday);
     const to = iso(addDays(this.monday, 6));
-    return this.data.events(this.me!.group!.id, from, to);
+    // /my-events сам находит все группы ученика за неделю - не только "текущую".
+    return this.data.myEvents(from, to);
   }
 
   onWeekChange(event: Event): void {
@@ -172,6 +174,7 @@ export class ScheduleComponent implements OnInit {
       .filter((e) => e.date === dayIso)
       .sort((a, b) => a.lesson - b.lesson)
       .map((e) => ({
+        eventId: e.id,
         number: e.lesson,
         time: LESSON_TIME[e.lesson - 1] ?? '',
         subject: e.subject,

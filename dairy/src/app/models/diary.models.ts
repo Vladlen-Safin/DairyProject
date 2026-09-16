@@ -25,25 +25,12 @@ export interface MeResponse {
   studyPeriod: string | null;
 }
 
-export interface EventMark {
-  pupil: number;
-  pupil_ext_id: string;
-  value: string;
-  comment: string | null;
-}
-
-export interface EventComment {
-  pupil: number;
-  pupil_ext_id: string;
-  text: string;
-}
-
-export interface EventMissing {
-  pupil: number;
-  pupil_ext_id: string;
-}
-
-export interface DiaryEvent {
+/**
+ * Занятие из /api/my-events - уже отфильтровано бэкендом по текущему ученику
+ * (и по всем его группам, актуальным на запрошенный период), поэтому здесь
+ * нет списков "по всем ученикам группы", как в общем /api/events.
+ */
+export interface MyEvent {
   id: number;
   ext_id: string;
   date: string;
@@ -52,9 +39,11 @@ export interface DiaryEvent {
   homework: string | null;
   subject: string;
   teacher: string;
-  marks: EventMark[];
-  comments: EventComment[];
-  missings: EventMissing[];
+  group_id: number;
+  group_ext_id: string;
+  marks: { value: string; comment: string | null }[];
+  comments: { text: string }[];
+  missing: boolean;
 }
 
 export interface FinalEvent {

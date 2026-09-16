@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { forkJoin, of, switchMap } from 'rxjs';
 
 import { DataService } from '../../../services/data/data.service';
-import { DiaryEvent, FinalEvent, MeResponse } from '../../../models/diary.models';
+import { FinalEvent, MeResponse, MyEvent } from '../../../models/diary.models';
 
 interface WeekOption {
   label: string;
@@ -65,7 +65,7 @@ export class DiaryComponent implements OnInit {
   error: string | null = null;
 
   me: MeResponse | null = null;
-  private allEvents: DiaryEvent[] = [];
+  private allEvents: MyEvent[] = [];
   private finals: FinalEvent[] = [];
 
   quarters: QuarterOption[] = [];
@@ -84,15 +84,13 @@ export class DiaryComponent implements OnInit {
         switchMap((me) => {
           this.me = me;
           if (!me.group || !me.pupil) {
-            return of({ me, events: [] as DiaryEvent[], finals: [] as FinalEvent[] });
+            return of({ me, events: [] as MyEvent[], finals: [] as FinalEvent[] });
           }
           return forkJoin({
             me: of(me),
-            events: this.data.events(
-              me.group.id,
-              me.group.schoolyear_start,
-              me.group.schoolyear_end
-            ),
+            // /my-events сам находит ВСЕ группы ученика, актуальные на этот период
+            // (не только "текущую" из /me) - за учебный год класс/подгруппа могли смениться.
+            events: this.data.myEvents(me.group.schoolyear_start, me.group.schoolyear_end),
             finals: this.data.finalMarks(me.group.id, me.pupil.id),
           });
         })
@@ -169,14 +167,15 @@ export class DiaryComponent implements OnInit {
 
   private buildRows(): void {
     const week = this.selectedWeek;
-    const pupilExt = this.me?.pupil?.ext_id;
-    if (!week || !pupilExt) {
+    if (!week) {
       this.rows = [];
       return;
     }
 
+    // /my-events уже отдаёт только занятия и оценки текущего ученика - фильтровать
+    // по pupil_ext_id больше не нужно, бэкенд сам это делает (по всем его группам).
     const inWeek = this.allEvents.filter((e) => e.date >= week.from && e.date <= week.to);
-    const bySubject = new Map<string, DiaryEvent[]>();
+    const bySubject = new Map<string, MyEvent[]>();
     for (const e of inWeek) {
       (bySubject.get(e.subject) ?? bySubject.set(e.subject, []).get(e.subject)!).push(e);
     }
@@ -187,20 +186,11 @@ export class DiaryComponent implements OnInit {
       for (let d = 0; d < 5; d++) {
         const date = addDays(week.from, d);
         const dayEvents = evs.filter((e) => e.date === date);
-        const marks = dayEvents.flatMap((e) =>
-          e.marks
-            .filter((m) => m.pupil_ext_id === pupilExt)
-            .map((m) => ({ value: m.value, comment: m.comment }))
-        );
+        const marks = dayEvents.flatMap((e) => e.marks);
         const homework =
           dayEvents.map((e) => (e.homework ?? '').trim()).find((h) => h && h !== '—') ?? '';
-        const note =
-          dayEvents
-            .flatMap((e) => e.comments.filter((c) => c.pupil_ext_id === pupilExt).map((c) => c.text))
-            .find(Boolean) ?? null;
-        const missing = dayEvents.some((e) =>
-          e.missings.some((m) => m.pupil_ext_id === pupilExt)
-        );
+        const note = dayEvents.flatMap((e) => e.comments.map((c) => c.text)).find(Boolean) ?? null;
+        const missing = dayEvents.some((e) => e.missing);
         days.push({ date, marks, homework, note, missing });
       }
       return { subject, days };

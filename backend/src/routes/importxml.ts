@@ -237,7 +237,11 @@ async function handleImport(req: Request, res: Response) {
 
   await upsertFileResult(db, "filelist.xml", messageno, [], 0, 0);
 
-  const builder = new XMLBuilder({ format: true });
+  // The result object uses the `@_` prefix for XML attributes.  XMLBuilder
+  // ignores that convention unless attribute processing is explicitly enabled;
+  // without this option it serializes `@_version` and `@_encoding` as invalid
+  // XML elements instead of the XML declaration attributes.
+  const builder = new XMLBuilder({ format: true, ignoreAttributes: false });
   const resultXml = builder.build({
     "?xml": { "@_version": "1.0", "@_encoding": "UTF-8" },
     result: {

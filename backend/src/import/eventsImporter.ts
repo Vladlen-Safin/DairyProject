@@ -15,6 +15,16 @@ export async function importEventsBatch(
   batch: RawEvent[],
   errorLog: string[],
 ): Promise<ImportStats> {
+  // Keep event row locks until all child rows have been replaced.
+  return db.transaction().execute((trx) => importEventsBatchInTransaction(trx, caches, batch, errorLog));
+}
+
+async function importEventsBatchInTransaction(
+  db: Kysely<DB>,
+  caches: HelperCaches,
+  batch: RawEvent[],
+  errorLog: string[],
+): Promise<ImportStats> {
   const stats: ImportStats = { success: 0, fail: 0 };
 
   const toDelete: string[] = [];
@@ -156,7 +166,20 @@ export async function importEventsBatch(
   }
 
   if (commentRows.length) await db.insertInto("ediary_comments").values(commentRows).execute();
-  if (markRows.length) await db.insertInto("ediary_marks").values(markRows).execute();
+
+  // Полностью одинаковые оценки (тот же event+pupil+value+comment) в выгрузке 1С -
+  // дубль, а не две разные оценки за урок. Разные value или разные comment - сохраняем
+  // оба (у ediary_marks намеренно нет UNIQUE(event, pupil) - оценок может быть несколько).
+  if (markRows.length) {
+    const seenMarks = new Set<string>();
+    const uniqueMarks = markRows.filter((r) => {
+      const key = `${r.event}:${r.pupil}:${r.value}:${r.comment ?? ""}`;
+      if (seenMarks.has(key)) return false;
+      seenMarks.add(key);
+      return true;
+    });
+    await db.insertInto("ediary_marks").values(uniqueMarks).execute();
+  }
 
   // В выгрузке 1С один и тот же ученик может встретиться в <missing> одного события
   // несколько раз - на ediary_missings есть UNIQUE(event, pupil), поэтому дедуплицируем.

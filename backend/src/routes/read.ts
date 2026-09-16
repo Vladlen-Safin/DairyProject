@@ -242,6 +242,118 @@ readRouter.get("/events", async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/my-events?from=<YYYY-MM-DD>&to=<YYYY-MM-DD>
+ * Дневник текущего ученика: сам находит все группы, в которых ученик состоял
+ * хотя бы часть запрошенного периода (не только "текущую" - за период класс/
+ * подгруппа могли смениться), и отдаёт объединённые занятия с оценками/
+ * комментариями/пропусками ТОЛЬКО этого ученика (в отличие от /events, который
+ * отдаёт данные всех учеников одной группы).
+ */
+readRouter.get("/my-events", requireAuth, async (req: AuthedRequest, res: Response) => {
+  const account = await db
+    .selectFrom("ediary_pupils_accounts as pa")
+    .innerJoin("ediary_pupils as p", "p.id", "pa.pupil")
+    .select(["p.id as pupil_id"])
+    .where("pa.uid", "=", req.auth!.userId)
+    .executeTakeFirst();
+
+  if (!account) {
+    return res.status(404).json({ error: "к учётной записи не привязан ученик" });
+  }
+  const pupilId = account.pupil_id;
+
+  const to = typeof req.query.to === "string" && DATE_RE.test(req.query.to)
+    ? req.query.to
+    : new Date().toISOString().slice(0, 10);
+  const from = typeof req.query.from === "string" && DATE_RE.test(req.query.from)
+    ? req.query.from
+    : new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+
+  const groupRows = await db
+    .selectFrom("ediary_groups_pupils")
+    .select("group_id")
+    .distinct()
+    .where("pupil", "=", pupilId)
+    .where("date_start", "<=", to)
+    .where("date_end", ">=", from)
+    .execute();
+
+  const groupIds = groupRows.map((g) => g.group_id);
+  if (groupIds.length === 0) {
+    return res.json([]);
+  }
+
+  const events = await db
+    .selectFrom("ediary_events as e")
+    .innerJoin("ediary_subjects as s", "s.id", "e.subject")
+    .innerJoin("ediary_teachers as t", "t.id", "e.teacher")
+    .innerJoin("ediary_groups as g", "g.id", "e.group_id")
+    .select([
+      "e.id",
+      "e.ext_id",
+      "e.date",
+      "e.lesson",
+      "e.cabinet",
+      "e.homework",
+      "s.name as subject",
+      "t.name as teacher",
+      "e.group_id",
+      "g.ext_id as group_ext_id",
+    ])
+    .where("e.group_id", "in", groupIds)
+    .where("e.date", ">=", from)
+    .where("e.date", "<=", to)
+    .orderBy("e.date")
+    .orderBy("e.lesson")
+    .limit(2000)
+    .execute();
+
+  const ids = events.map((e) => e.id);
+  const [marks, comments, missings] = ids.length
+    ? await Promise.all([
+        db
+          .selectFrom("ediary_marks")
+          .select(["event", "value", "comment"])
+          .where("event", "in", ids)
+          .where("pupil", "=", pupilId)
+          .execute(),
+        db
+          .selectFrom("ediary_comments")
+          .select(["event", "text"])
+          .where("event", "in", ids)
+          .where("pupil", "=", pupilId)
+          .execute(),
+        db
+          .selectFrom("ediary_missings")
+          .select("event")
+          .where("event", "in", ids)
+          .where("pupil", "=", pupilId)
+          .execute(),
+      ])
+    : [[], [], []];
+
+  const byEvent = <T extends { event: number }>(rows: T[]) => {
+    const map = new Map<number, Omit<T, "event">[]>();
+    for (const { event, ...rest } of rows) {
+      (map.get(event) ?? map.set(event, []).get(event)!).push(rest);
+    }
+    return map;
+  };
+  const marksMap = byEvent(marks);
+  const commentsMap = byEvent(comments);
+  const missingEvents = new Set(missings.map((m) => m.event));
+
+  res.json(
+    events.map((e) => ({
+      ...e,
+      marks: marksMap.get(e.id) ?? [],
+      comments: commentsMap.get(e.id) ?? [],
+      missing: missingEvents.has(e.id),
+    })),
+  );
+});
+
+/**
  * GET /api/final-marks?group=<id>&pupil=<id>
  * Итоговые события с оценками. Хотя бы один из фильтров обязателен.
  */

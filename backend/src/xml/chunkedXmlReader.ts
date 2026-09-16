@@ -54,6 +54,8 @@ export function readChunkedXml(
     let collecting = false;
     let collectDepth = -1;
     let settled = false;
+    let pending: Record<string, unknown>[] = [];
+    let processing: Promise<void> = Promise.resolve();
 
     const finish = (err?: Error) => {
       if (settled) return;
@@ -83,16 +85,9 @@ export function readChunkedXml(
           const parent = stack[stack.length - 1]!;
           (parent.children[frame.tagName] ??= []).push(value);
         } else {
-          readable.pause();
-          Promise.resolve(opts.onItem(value as Record<string, unknown>))
-            .then(() => {
-              if (opts.signal?.aborted) {
-                finish();
-                return;
-              }
-              readable.resume();
-            })
-            .catch(finish);
+          // pause() does not interrupt the synchronous parser.write() call.
+          // Queue items from this chunk; consume them sequentially below.
+          pending.push(value as Record<string, unknown>);
         }
       }
       pathStack.pop();
@@ -105,11 +100,22 @@ export function readChunkedXml(
     parser.on("error", finish);
 
     readable.on("data", (chunk: Buffer) => {
+      readable.pause();
       try {
         parser.write(chunk.toString("utf-8"));
       } catch (err) {
         finish(err as Error);
+        return;
       }
+      processing = (async () => {
+        for (const item of pending) {
+          if (settled || opts.signal?.aborted) break;
+          await opts.onItem(item);
+        }
+        pending = [];
+        if (opts.signal?.aborted) finish();
+        else if (!settled) readable.resume();
+      })().catch(finish);
     });
 
     readable.on("end", () => {
@@ -119,7 +125,7 @@ export function readChunkedXml(
         finish(err as Error);
         return;
       }
-      finish();
+      void processing.then(() => finish(), finish);
     });
 
     readable.on("error", finish);

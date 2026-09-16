@@ -84,7 +84,7 @@ npm run migrate
 ### 4. Проверка FTP (опционально)
 
 ```bash
-npm run ftp:check     # список файлов в корне FTP
+npm.cmd run ftp:check     # список файлов в корне FTP
 npm run ftp:peek      # печатает содержимое filelist.xml / book.xml / groups.xml / ...
 ```
 

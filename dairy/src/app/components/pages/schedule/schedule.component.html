@@ -46,7 +46,7 @@
           <div class="grid-header">Преподаватель</div>
           <div class="grid-header">Аудитория</div>
 
-          @for (lesson of lessons; track lesson.number) {
+          @for (lesson of lessons; track lesson.eventId) {
             <div class="cell pair-cell">
               <div class="pair-number">{{ lesson.number }}</div>
             </div>
