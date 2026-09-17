@@ -42,6 +42,7 @@ export interface MyEvent {
   teacher: string;
   group_id: number;
   group_ext_id: string;
+  lesson_time: { timebegin: string; timeend: string } | null;
   marks: { value: string; comment: string | null }[];
   comments: { text: string }[];
   missing: boolean;

@@ -365,3 +365,35 @@
     padding: 24px;
     color: #5F6B84;
 }
+
+.mobile-detail, .day-arrow { display: none; }
+.week-buttons { display: grid; grid-template-columns: 52px minmax(0, 210px) 52px; }
+.week-button { width: 100%; border: 1px solid #d9e1f2; }
+.week-arrow { display: flex; align-items: center; justify-content: center; color: #0b5ed7; }
+.week-button:disabled { opacity: .45; cursor: default; }
+button:focus-visible { outline: 2px solid #0b5ed7; outline-offset: 3px; }
+
+@media (max-width: 768px) {
+    .schedule-page { padding: 20px 12px; }
+    .page-title { font-size: 24px; margin-bottom: 20px; }
+    .toolbar-card { padding: 0; background: transparent; box-shadow: none; margin-bottom: 18px; }
+    .week-buttons { width: 100%; grid-template-columns: 48px minmax(0, 1fr) 48px; gap: 10px; }
+    .week-button { height: 44px; border-radius: 9px; font-size: 13px; }
+    .week-button:not(.week-arrow) { background: #0b5ed7; color: #fff; }
+    .day-buttons { display: none; }
+    .schedule-card { padding: 0; overflow: hidden; border-radius: 12px; }
+    .lesson-card { touch-action: pan-y pinch-zoom; }
+    .schedule-card2 { gap: 0; }
+    .current-date { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; min-height: 64px; padding: 8px 0; background: #f7f9fd; }
+    .day { font-size: 14px; text-align: center; line-height: 1.5; }
+    .day-arrow { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; background: transparent; color: #0b5ed7; }
+    .schedule-grid { grid-template-columns: minmax(100px, 35%) minmax(0, 1fr); border: 0; border-radius: 0; }
+    .grid-header, .time-cell, .teacher-cell, .room-cell { display: none; }
+    .cell { min-width: 0; min-height: 76px; padding: 12px 10px; border: 0; border-bottom: 1px solid #edf1f7; color: #1f2d5c; }
+    .pair-cell { gap: 5px; border-right: 1px solid #edf1f7; }
+    .pair-number { color: #0b5ed7; font-size: 18px; }
+    .mobile-detail { display: block; }
+    .pair-time { font-size: 11px; white-space: nowrap; color: #42526e; }
+    .subject-cell { flex-direction: column; align-items: flex-start; justify-content: center; gap: 5px; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+    .teacher-name { font-size: 12px; font-weight: 400; color: #5f6b84; }
+}

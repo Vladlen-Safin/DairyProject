@@ -97,97 +97,20 @@
    Кнопки четвертей
 ========================================== */
 
-.quarter-buttons {
 
-    display: flex;
 
-    gap: 16px;
-
-    padding: 22px 24px;
-
-    border-bottom: 1px solid #EDF1F7;
-
-}
-
-.quarter-btn {
-
-    min-width: 170px !important;
-
-    height: 48px !important;
-
-    border-radius: 12px !important;
-
-    font-size: 15px !important;
-
-    font-weight: 500 !important;
-
-}
-
-.quarter-btn.active {
-
-    background: #0B5ED7 !important;
-
-    color: white !important;
-
-}
-
-.quarter-btn:not(.active) {
-
-    background: white;
-
-    border: 1px solid #D9E1F2;
-
-    color: #1F2D5C;
-
-}
-
-.quarter-btn:hover {
-
-    transform: translateY(-2px);
-
-    transition: .2s;
-
-}
 
 /* ==========================================
    Фильтры
 ========================================== */
 
-.filters {
 
-    display: flex;
 
-    gap: 60px;
 
-    padding: 26px 24px;
 
-}
 
-.filter-item {
 
-    display: flex;
 
-    flex-direction: column;
-
-}
-
-.filter-item label {
-
-    margin-bottom: 10px;
-
-    font-size: 15px;
-
-    color: #42526E;
-
-    font-weight: 500;
-
-}
-
-mat-form-field {
-
-    width: 320px;
-
-}
 
 /* ==========================================
    Таблица
@@ -307,11 +230,7 @@ mat-form-field {
    Строки предметов
 ========================================== */
 
-.subject-row {
 
-    display: contents;
-
-}
 
 .subject-cell {
 
@@ -329,47 +248,11 @@ mat-form-field {
 
 }
 
-.grade-cell {
 
-    display: grid;
 
-    grid-template-columns: 80px 1fr;
 
-    border-bottom: 1px solid #EDF1F7;
 
-    border-right: 1px solid #EDF1F7;
 
-}
-
-.grade {
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: center;
-
-    gap: 8px;
-
-    border-right: 1px solid #EDF1F7;
-
-    min-height: 72px;
-
-}
-
-.homework {
-
-    display: flex;
-
-    align-items: center;
-
-    min-height: 72px;
-
-    font-size: 14px;
-
-    color: #3E4A66;
-
-}
 
 /* ==========================================
    Цвета оценок
@@ -607,16 +490,7 @@ mat-form-field {
    Наполнение сетки данными из API
 ========================================== */
 
-.filter-item select {
-    height: 46px;
-    min-width: 260px;
-    padding: 0 14px;
-    font-size: 15px;
-    border: 1px solid #bfc8d4;
-    border-radius: 10px;
-    background: #fff;
-    color: #1F2D5C;
-}
+
 
 .week-table {
     grid-template-columns: 180px repeat(5, minmax(200px, 1fr));
@@ -684,4 +558,57 @@ mat-form-field {
     margin-top: 4px;
     color: #8a5a00;
     font-style: italic;
+}
+
+.day-navigation, .mobile-period-selects { display: none; }
+
+@media (max-width: 768px) {
+    .month-toolbar > .period-section { display: none; }
+    .mobile-period-selects { display: grid; gap: 8px; padding: 14px; }
+    .mobile-period-selects label { font-size: 12px; color: #42526e; }
+    .mobile-period-selects select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid #d9e1f2; border-radius: 8px; background: #fff; color: #1f2d5c; font: inherit; }
+    .diary-page { padding: 20px 12px; min-height: 0; }
+    .page-title { font-size: 24px; margin-bottom: 18px; }
+    .toolbar-card { margin-bottom: 18px; border-radius: 12px; }
+    .period-section { padding: 12px; }
+    .period-label { font-size: 12px; margin-bottom: 8px; }
+    .period-chips { flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding-bottom: 4px; }
+    .period-chip { flex: 0 0 auto; padding: 8px 12px; font-size: 12px; }
+    .week-chip { min-width: 72px; }
+    .diary-card { border-radius: 10px; }
+    .weekly-card { overflow: hidden; touch-action: pan-y pinch-zoom; }
+    .diary-table { min-width: 0; }
+    .week-table { grid-template-columns: minmax(0, 34fr) minmax(0, 66fr); }
+    .week-table .mobile-hidden-day { display: none; }
+    .subject-header, .day-header { font-size: 12px; }
+    .day-header > div:first-child { padding-top: 8px; }
+    .day-header > span { margin: 2px 0 6px; font-size: 12px; }
+    .day-columns { grid-template-columns: minmax(0, 34fr) minmax(0, 66fr); }
+    .day-columns span { padding: 8px 3px; font-size: 11px; overflow-wrap: anywhere; }
+    .subject-cell { padding: 10px 8px; font-size: 12px; overflow-wrap: anywhere; color: #1f2d5c; }
+    .day-cell {
+        grid-template-columns: minmax(0, 34fr) minmax(0, 66fr);
+        grid-template-rows: auto; gap: 0; padding: 0; min-height: 44px;
+    }
+    .day-cell .marks { align-items: center; justify-content: center; gap: 4px; padding: 8px 3px; border-right: 1px solid #edf1f7; }
+    .day-cell .hw { padding: 10px 7px; font-size: 12px; overflow-wrap: anywhere; align-self: center; }
+    .mark-chip { min-width: 0; height: auto; padding: 0 2px; border-radius: 0; background: transparent; }
+    .mark-chip.answer { color: #1565f9; background: transparent; }
+    .mark-chip.practice { color: #009cb8; background: transparent; }
+    .mark-chip.control, .mark-chip.absent { color: #d32f2f; background: transparent; }
+    .mark-chip.homework { color: #26822a; background: transparent; }
+    .mark-chip.lab { color: #966600; background: transparent; }
+    .mark-chip.test { color: #7e57c2; background: transparent; }
+    .final-table { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .day-navigation { display: flex; justify-content: space-between; align-items: center; padding: 12px 8px; }
+    .day-navigation button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #e7ecf5; border-radius: 50%; background: #fff; color: #0a4fb8; }
+    .day-navigation button:disabled { opacity: .35; }
+    .day-navigation button:focus-visible { outline: 2px solid #0b5ed7; outline-offset: 2px; }
+    .day-dots { display: flex; }
+    .day-dots button { width: 30px; border: 0; background: transparent; }
+    .day-dots span { width: 7px; height: 7px; border-radius: 50%; background: #c4cada; }
+    .day-dots .active span { background: #0a4fb8; width: 9px; height: 9px; }
+    .day-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .legend-card { margin-top: 8px; padding: 12px; gap: 12px; border-radius: 12px; }
+    .legend-item { font-size: 11px; white-space: normal; gap: 6px; }
 }

@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from "express";
+import { sql } from "kysely";
 import { db } from "../db/index.js";
 import { requireAuth, type AuthedRequest } from "../middleware/auth.js";
 
@@ -299,6 +300,19 @@ readRouter.get("/my-events", requireAuth, async (req: AuthedRequest, res: Respon
       "t.name as teacher",
       "e.group_id",
       "g.ext_id as group_ext_id",
+      // A scalar subquery keeps each event unique, even if imported bell ranges overlap.
+      // Missing or ambiguous matches return null instead of an arbitrary time.
+      sql<{ timebegin: string; timeend: string } | null>`(
+        SELECT json_build_object('timebegin', min(l.timebegin), 'timeend', min(l.timeend))
+        FROM ediary_lessons l
+        JOIN ediary_shifts sh ON sh.id = l.shift
+        WHERE sh.schoolyear = g.schoolyear
+          AND sh.name = g.shift
+          AND g.parallel BETWEEN sh.parallelstart AND sh.parallelend
+          AND l.lessonnumber = e.lesson
+          AND l.weekday = EXTRACT(ISODOW FROM e.date)
+        HAVING count(*) = 1
+      )`.as("lesson_time"),
     ])
     .where("e.group_id", "in", groupIds)
     .where("e.date", ">=", from)

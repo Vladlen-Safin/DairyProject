@@ -27,6 +27,7 @@ export class AuthComponent implements OnInit, OnDestroy {
   });
 
   isSubmitting = false;
+  showPassword = false;
   errorMessage: string | null = null;
 
   attemptsLeft = MAX_ATTEMPTS;
@@ -96,6 +97,8 @@ export class AuthComponent implements OnInit, OnDestroy {
   }
 
   private startLockoutCountdown(unlockAt: number): void {
+    if (this.lockoutInterval) clearInterval(this.lockoutInterval);
+    this.lockoutSecondsLeft = Math.max(0, Math.ceil((unlockAt - Date.now()) / 1000));
     this.lockoutInterval = setInterval(() => {
       const secondsLeft = Math.ceil((unlockAt - Date.now()) / 1000);
 

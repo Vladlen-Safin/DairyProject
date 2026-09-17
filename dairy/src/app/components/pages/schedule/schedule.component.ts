@@ -15,15 +15,6 @@ interface Lesson {
 }
 
 const WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'];
-const LESSON_TIME = [
-  '08:30–09:15',
-  '09:25–10:10',
-  '10:30–11:15',
-  '11:25–12:10',
-  '12:30–13:15',
-  '13:35–14:20',
-  '14:30–15:15',
-];
 const MONTHS = [
   'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
@@ -31,6 +22,11 @@ const MONTHS = [
 
 function iso(d: Date): string {
   return d.toISOString().slice(0, 10);
+}
+function todayDate(): Date {
+  const now = new Date();
+  // Календарная дата пользователя без сдвига на предыдущий день из-за UTC.
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 }
 function mondayOf(date: Date): Date {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -47,14 +43,8 @@ function isoWeekValue(monday: Date): string {
   // значение для <input type="week"> в формате YYYY-Www
   const target = new Date(monday);
   const thursday = addDays(target, 3);
-  const firstThursday = new Date(Date.UTC(thursday.getUTCFullYear(), 0, 4));
-  const week =
-    1 +
-    Math.round(
-      ((thursday.getTime() - firstThursday.getTime()) / 86400000 -
-        ((firstThursday.getUTCDay() + 6) % 7)) /
-        7
-    );
+  const firstMonday = mondayOf(new Date(Date.UTC(thursday.getUTCFullYear(), 0, 4)));
+  const week = 1 + Math.round((monday.getTime() - firstMonday.getTime()) / (7 * 86400000));
   return `${thursday.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 function mondayFromWeekValue(value: string): Date {
@@ -83,15 +73,49 @@ export class ScheduleComponent implements OnInit {
   currentDate = '';
   selectedDayIndex = 0;
   lessons: Lesson[] = [];
+  private touchStart: { x: number; y: number } | null = null;
+
+  moveDay(delta: number): void {
+    if (this.loading) return;
+    const index = this.selectedDayIndex + delta;
+    if (index < 0 || index >= WEEKDAYS.length) {
+      this.selectedDayIndex = index < 0 ? WEEKDAYS.length - 1 : 0;
+      this.shiftWeek(delta);
+    } else {
+      this.selectDay(index);
+    }
+  }
+
+  onTouchStart(event: TouchEvent): void {
+    this.touchStart = event.touches.length === 1
+      ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null;
+  }
+
+  onTouchEnd(event: TouchEvent): void {
+    const start = this.touchStart;
+    this.touchStart = null;
+    if (!start || !event.changedTouches.length) return;
+    const dx = event.changedTouches[0].clientX - start.x;
+    const dy = event.changedTouches[0].clientY - start.y;
+    if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5) this.moveDay(dx < 0 ? 1 : -1);
+  }
+
+  cancelSwipe(): void { this.touchStart = null; }
+
+  teacherInitials(name: string): string {
+    const [surname, ...names] = name.trim().split(/\s+/);
+    return [surname, ...names.map((part) => part.includes('.') ? part : `${part[0]}.`)].join(' ');
+  }
 
   private me: MeResponse | null = null;
-  private monday = mondayOf(new Date());
+  private monday = mondayOf(todayDate());
   private weekEvents: MyEvent[] = [];
 
   ngOnInit(): void {
-    const todayIdx = (new Date().getUTCDay() + 6) % 7; // 0=пн
+    const today = todayDate();
+    const todayIdx = (today.getUTCDay() + 6) % 7; // 0=пн
     this.selectedDayIndex = todayIdx > 4 ? 0 : todayIdx;
-    this.monday = mondayOf(new Date());
+    this.monday = mondayOf(today);
 
     this.data
       .me()
@@ -138,9 +162,22 @@ export class ScheduleComponent implements OnInit {
     this.reloadWeek();
   }
 
+  get isCurrentWeek(): boolean {
+    return iso(this.monday) === iso(mondayOf(todayDate()));
+  }
+
+  goToCurrentWeek(): void {
+    const today = todayDate();
+    this.monday = mondayOf(today);
+    const dayIndex = (today.getUTCDay() + 6) % 7;
+    this.selectedDayIndex = dayIndex < 5 ? dayIndex : 0;
+    this.reloadWeek();
+  }
+
   private reloadWeek(): void {
     if (!this.me?.group) return;
     this.loading = true;
+    this.error = null;
     this.loadWeek().subscribe({
       next: (events) => {
         this.loading = false;
@@ -176,7 +213,9 @@ export class ScheduleComponent implements OnInit {
       .map((e) => ({
         eventId: e.id,
         number: e.lesson,
-        time: LESSON_TIME[e.lesson - 1] ?? '',
+        time: e.lesson_time?.timebegin && e.lesson_time?.timeend
+          ? `${e.lesson_time.timebegin}–${e.lesson_time.timeend}`
+          : 'Время не указано',
         subject: e.subject,
         teacher: e.teacher,
         room: e.cabinet ?? '—',

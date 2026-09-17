@@ -36,6 +36,24 @@
     -->
 
     <div class="toolbar-card month-toolbar">
+      <div class="mobile-period-selects">
+        <label for="diary-month">Месяц</label>
+        <select id="diary-month" [value]="showFinal ? 'final' : selectedMonth?.id"
+                (change)="onMonthChange($any($event.target).value)">
+          @for (month of months; track month.id) {
+            <option [value]="month.id">{{ month.name }} {{ month.year }}</option>
+          }
+          <option value="final">Итоговая</option>
+        </select>
+        @if (!showFinal && selectedWeek) {
+          <label for="diary-week">Учебная неделя</label>
+          <select id="diary-week" [value]="selectedWeek.from" (change)="onWeekChange($any($event.target).selectedIndex)">
+            @for (week of weeks; track week.from) {
+              <option [value]="week.from">{{ week.from.slice(8) }}.{{ week.from.slice(5, 7) }} – {{ week.to.slice(8) }}.{{ week.to.slice(5, 7) }}</option>
+            }
+          </select>
+        }
+      </div>
       <div class="period-section">
         <div class="period-label">Месяц</div>
         <div class="period-chips" role="group" aria-label="Месяц учебного года">
@@ -87,11 +105,12 @@
       </div>
     } @else {
       <!-- Недельная сетка -->
-      <div class="diary-card">
+      <div class="diary-card weekly-card" (touchstart)="onTouchStart($event)"
+           (touchend)="onTouchEnd($event)" (touchcancel)="cancelSwipe()">
         <div class="diary-table week-table">
           <div class="subject-header">Предмет</div>
           @for (i of [0,1,2,3,4]; track i) {
-            <div class="day-header">
+            <div class="day-header" [class.mobile-hidden-day]="i !== selectedDay">
               <div>{{ dayLabel(i) }}</div>
               <span>{{ dayDate(i) }}</span>
               <div class="day-columns">
@@ -103,8 +122,8 @@
 
           @for (row of rows; track row.subject) {
             <div class="subject-cell">{{ row.subject }}</div>
-            @for (cell of row.days; track cell.date) {
-              <div class="day-cell" [class.missing]="cell.missing">
+            @for (cell of row.days; track cell.date; let i = $index) {
+              <div class="day-cell" [class.missing]="cell.missing" [class.mobile-hidden-day]="i !== selectedDay">
                 <div class="marks">
                   @for (m of cell.marks; track $index) {
                     <span [class]="'mark-chip ' + markClass(m.comment)"
@@ -122,10 +141,26 @@
 
           @if (!rows.length) {
             <div class="subject-cell">На этой неделе занятий нет</div>
-            @for (i of [0,1,2,3,4]; track i) { <div class="day-cell"></div> }
+            @for (i of [0,1,2,3,4]; track i) { <div class="day-cell" [class.mobile-hidden-day]="i !== selectedDay"></div> }
           }
         </div>
       </div>
+      <nav class="day-navigation" aria-label="Переключение дня">
+        <button type="button" aria-label="Предыдущий день" [disabled]="!canMoveDay(-1)" (click)="moveDay(-1)">
+          <span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>
+        </button>
+        <div class="day-dots">
+          @for (day of weekdayNames; track day; let i = $index) {
+            <button type="button" [attr.aria-label]="day + ', ' + dayDate(i)"
+                    [attr.aria-current]="i === selectedDay ? 'date' : null"
+                    [class.active]="i === selectedDay" (click)="selectedDay = i"><span></span></button>
+          }
+        </div>
+        <button type="button" aria-label="Следующий день" [disabled]="!canMoveDay(1)" (click)="moveDay(1)">
+          <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
+        </button>
+        <span class="day-announcement" aria-live="polite">{{ dayLabel(selectedDay) }}, {{ dayDate(selectedDay) }}</span>
+      </nav>
     }
 
     <div class="legend-card">

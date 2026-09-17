@@ -36,11 +36,12 @@
 
 }
 
-@media(max-width:600px){
+@media(max-width:768px){
 
 .layout-content{
 
-    padding:16px;
+    padding:0 0 calc(84px + env(safe-area-inset-bottom, 0px));
+    min-width:0;
 
 }
 

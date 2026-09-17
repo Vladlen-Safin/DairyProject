@@ -3,11 +3,14 @@
 
   <div class="toolbar-card">
     <div class="week-buttons">
-      <button class="week-button" (click)="shiftWeek(-1)">&lt; Предыдущая неделя</button>
-      <button class="week-button active">Текущая неделя</button>
-      <button class="week-button" (click)="shiftWeek(1)">Следующая неделя &gt;</button>
+      <button type="button" class="week-button week-arrow" aria-label="Предыдущая неделя" [disabled]="loading" (click)="shiftWeek(-1)"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span></button>
+      <button type="button" class="week-button" [class.active]="isCurrentWeek"
+              [attr.aria-pressed]="isCurrentWeek" [disabled]="loading"
+              (click)="goToCurrentWeek()">Текущая неделя</button>
+      <button type="button" class="week-button week-arrow" aria-label="Следующая неделя" [disabled]="loading" (click)="shiftWeek(1)"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>
     </div>
 
+    <!-- Выбор недели временно скрыт, пока определяется необходимость блока.
     <div class="calendar">
       <label>Выберите неделю:</label>
       <div class="week-picker">
@@ -16,10 +19,12 @@
           #weekInput
           class="hidden-week-input"
           type="week"
+          [disabled]="loading"
           [value]="selectedWeek"
           (change)="onWeekChange($event)" />
       </div>
     </div>
+    -->
   </div>
 
   @if (loading) {
@@ -33,10 +38,12 @@
       }
     </div>
 
-    <div class="schedule-card">
+    <div class="schedule-card lesson-card" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (touchcancel)="cancelSwipe()">
       <div class="schedule-card2">
         <div class="current-date">
-          <span class="day">{{ currentDate }}</span>
+          <button type="button" class="day-arrow" aria-label="Предыдущий день" (click)="moveDay(-1)"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span></button>
+          <span class="day" aria-live="polite">{{ currentDate }}</span>
+          <button type="button" class="day-arrow" aria-label="Следующий день" (click)="moveDay(1)"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>
         </div>
 
         <div class="schedule-grid">
@@ -49,9 +56,10 @@
           @for (lesson of lessons; track lesson.eventId) {
             <div class="cell pair-cell">
               <div class="pair-number">{{ lesson.number }}</div>
+              <div class="mobile-detail pair-time">{{ lesson.time }}</div>
             </div>
-            <div class="cell">{{ lesson.time }}</div>
-            <div class="cell subject-cell">{{ lesson.subject }}</div>
+            <div class="cell time-cell">{{ lesson.time }}</div>
+            <div class="cell subject-cell"><span>{{ lesson.subject }}</span><span class="mobile-detail teacher-name">{{ teacherInitials(lesson.teacher) }}</span></div>
             <div class="cell teacher-cell">{{ lesson.teacher }}</div>
             <div class="cell room-cell">{{ lesson.room }}</div>
           }

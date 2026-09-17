@@ -1,49 +1,46 @@
-<div class="login-wrapper">
-  <form class="login-wrapper__form" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <div class="login-wrapper__item">
-      <label>Логин <mark>*</mark></label>
-      <input
-        formControlName="login"
-        placeholder="Введите логин"
-        [class.login-wrapper__input--invalid]="loginControl.invalid && loginControl.touched"
-        autocomplete="username"
-      />
-      <span class="login-wrapper__hint" *ngIf="loginControl.invalid && loginControl.touched">
-        Введите логин
-      </span>
-    </div>
-
-    <div class="login-wrapper__item">
-      <label>Пароль <mark>*</mark></label>
-      <input
-        type="password"
-        formControlName="password"
-        placeholder="Введите пароль"
-        [class.login-wrapper__input--invalid]="passwordControl.invalid && passwordControl.touched"
-        autocomplete="current-password"
-      />
-      <span class="login-wrapper__hint" *ngIf="passwordControl.invalid && passwordControl.touched">
-        Минимум 4 символа
-      </span>
-    </div>
-
-    <div class="login-wrapper__error" *ngIf="errorMessage && !isLockedOut">
-      {{ errorMessage }}
-    </div>
-
-    <div class="login-wrapper__error" *ngIf="isLockedOut">
-      Слишком много попыток. Повторите через {{ lockoutSecondsLeft }} сек.
-    </div>
-
-    <div class="login-wrapper__attempts" *ngIf="!isLockedOut && attemptsLeft < 5">
-      Осталось попыток: {{ attemptsLeft }}
-    </div>
-
-    <button
-      type="submit"
-      [disabled]="form.invalid || isSubmitting || isLockedOut"
-    >
-      {{ isSubmitting ? 'Входим...' : 'Войти' }}
-    </button>
-  </form>
-</div>
+<main class="auth-page">
+  <div class="auth-shell">
+    <section class="welcome-panel" aria-label="Электронный дневник">
+      <div class="brand"><img src="images/logo.png?v=2" alt="" width="64" height="64" /><span>Электронный<br /><strong>дневник</strong></span></div>
+      <div class="features">
+        <div><span class="material-symbols-rounded" aria-hidden="true">menu_book</span><span>Дневник<small>Оценки и домашние задания</small></span></div>
+        <div><span class="material-symbols-rounded" aria-hidden="true">calendar_month</span><span>Расписание<small>План занятий на каждый день</small></span></div>
+        <div><span class="material-symbols-rounded" aria-hidden="true">school</span><span>Итоги обучения<small>Ваши результаты за учебный год</small></span></div>
+      </div>
+    </section>
+    <section class="form-panel" aria-labelledby="login-title">
+      <div class="login-icon"><span class="material-symbols-rounded" aria-hidden="true">login</span></div>
+      <h2 id="login-title">Добро пожаловать</h2>
+      <p class="subtitle">Войдите в свой электронный дневник</p>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate [attr.aria-busy]="isSubmitting">
+        <div class="field">
+          <label for="auth-login">Логин</label>
+          <div class="input-wrap" [class.invalid]="loginControl.invalid && loginControl.touched">
+            <span class="material-symbols-rounded field-icon" aria-hidden="true">person</span>
+            <input id="auth-login" name="username" formControlName="login" placeholder="Введите логин" autocomplete="username" autocapitalize="none" [spellcheck]="false" required [attr.aria-invalid]="loginControl.invalid && loginControl.touched" [attr.aria-describedby]="loginControl.invalid && loginControl.touched ? 'login-hint' : null" />
+          </div>
+          @if (loginControl.invalid && loginControl.touched) { <span id="login-hint" class="field-error">{{ loginControl.hasError('maxlength') ? 'Не более 100 символов' : 'Введите логин' }}</span> }
+        </div>
+        <div class="field">
+          <label for="auth-password">Пароль</label>
+          <div class="input-wrap" [class.invalid]="passwordControl.invalid && passwordControl.touched">
+            <span class="material-symbols-rounded field-icon" aria-hidden="true">lock</span>
+            <input id="auth-password" name="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Введите пароль" autocomplete="current-password" required [attr.aria-invalid]="passwordControl.invalid && passwordControl.touched" [attr.aria-describedby]="passwordControl.invalid && passwordControl.touched ? 'password-hint' : null" />
+            <button type="button" class="password-toggle" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Скрыть пароль' : 'Показать пароль'" [attr.aria-pressed]="showPassword"><span class="material-symbols-rounded" aria-hidden="true">{{ showPassword ? 'visibility_off' : 'visibility' }}</span></button>
+          </div>
+          @if (passwordControl.invalid && passwordControl.touched) { <span id="password-hint" class="field-error">{{ passwordControl.hasError('required') ? 'Введите пароль' : 'Минимум 4 символа' }}</span> }
+        </div>
+        @if (errorMessage && !isLockedOut) { <div class="form-error" role="alert">{{ errorMessage }}</div> }
+        @if (isLockedOut) { <div class="form-error" role="status">Слишком много попыток. Повторите через {{ lockoutSecondsLeft }} сек.</div> }
+        @if (!isLockedOut && attemptsLeft < 5) { <p class="attempts">Осталось попыток: {{ attemptsLeft }}</p> }
+        <button class="submit-button" type="submit" [disabled]="isSubmitting || isLockedOut">
+          @if (isSubmitting) { <span class="spinner" aria-hidden="true"></span> }
+          {{ isSubmitting ? 'Входим…' : 'Войти в дневник' }}
+          @if (!isSubmitting) { <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span> }
+        </button>
+        <span class="submit-status" role="status">{{ isSubmitting ? 'Выполняется вход' : '' }}</span>
+      </form>
+      <div class="login-help"><span class="material-symbols-rounded" aria-hidden="true">help_outline</span><p>Не получается войти?<br /><span>Обратитесь к администратору учебного заведения.</span></p></div>
+    </section>
+  </div>
+</main>
