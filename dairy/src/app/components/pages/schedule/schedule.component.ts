@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { forkJoin, of, switchMap } from 'rxjs';
 
 import { DataService } from '../../../services/data/data.service';
@@ -56,9 +57,9 @@ function mondayFromWeekValue(value: string): Date {
 @Component({
   selector: 'app-schedule',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './schedule.component.html',
-  styleUrl: './schedule.component.scss',
+  styleUrls: ['./schedule.component.scss'],
 })
 export class ScheduleComponent implements OnInit {
   private data = inject(DataService);
@@ -73,6 +74,9 @@ export class ScheduleComponent implements OnInit {
   currentDate = '';
   selectedDayIndex = 0;
   lessons: Lesson[] = [];
+  showWeek = false;
+  weekDays: { name: string; date: string; lessons: Lesson[] }[] = [];
+  weekRows: { number: number; days: Lesson[][] }[] = [];
   private touchStart: { x: number; y: number } | null = null;
 
   moveDay(delta: number): void {
@@ -114,8 +118,9 @@ export class ScheduleComponent implements OnInit {
   ngOnInit(): void {
     const today = todayDate();
     const todayIdx = (today.getUTCDay() + 6) % 7; // 0=пн
-    this.selectedDayIndex = todayIdx > 4 ? 0 : todayIdx;
+    this.selectedDayIndex = todayIdx < WEEKDAYS.length ? todayIdx : 0;
     this.monday = mondayOf(today);
+    this.refresh();
 
     this.data
       .me()
@@ -170,7 +175,8 @@ export class ScheduleComponent implements OnInit {
     const today = todayDate();
     this.monday = mondayOf(today);
     const dayIndex = (today.getUTCDay() + 6) % 7;
-    this.selectedDayIndex = dayIndex < 5 ? dayIndex : 0;
+    this.selectedDayIndex = dayIndex < WEEKDAYS.length ? dayIndex : 0;
+    this.showWeek = false;
     this.reloadWeek();
   }
 
@@ -178,6 +184,8 @@ export class ScheduleComponent implements OnInit {
     if (!this.me?.group) return;
     this.loading = true;
     this.error = null;
+    this.weekEvents = [];
+    this.refresh();
     this.loadWeek().subscribe({
       next: (events) => {
         this.loading = false;
@@ -192,8 +200,20 @@ export class ScheduleComponent implements OnInit {
   }
 
   selectDay(i: number): void {
+    this.showWeek = false;
     this.selectedDayIndex = i;
     this.refresh();
+  }
+
+  onDayChange(value: string | number): void {
+    if (value === 'week') {
+      this.showWeek = true;
+      return;
+    }
+    const index = Number(value);
+    if (Number.isInteger(index) && index >= 0 && index < this.weekdayNames.length) {
+      this.selectDay(index);
+    }
   }
 
   private refresh(): void {
@@ -206,9 +226,22 @@ export class ScheduleComponent implements OnInit {
       MONTHS[day.getUTCMonth()]
     } ${day.getUTCFullYear()}`;
 
-    const dayIso = iso(day);
-    this.lessons = this.weekEvents
-      .filter((e) => e.date === dayIso)
+    this.weekDays = WEEKDAYS.map((name, index) => ({
+      name,
+      date: this.fmt(addDays(this.monday, index)),
+      lessons: this.lessonsOn(iso(addDays(this.monday, index))),
+    }));
+    this.lessons = this.weekDays[this.selectedDayIndex].lessons;
+    const numbers = [...new Set(this.weekDays.flatMap((item) => item.lessons.map((lesson) => lesson.number)))].sort((a, b) => a - b);
+    this.weekRows = numbers.map((number) => ({
+      number,
+      days: this.weekDays.map((item) => item.lessons.filter((lesson) => lesson.number === number)),
+    }));
+  }
+
+  private lessonsOn(date: string): Lesson[] {
+    return this.weekEvents
+      .filter((e) => e.date === date)
       .sort((a, b) => a.lesson - b.lesson)
       .map((e) => ({
         eventId: e.id,

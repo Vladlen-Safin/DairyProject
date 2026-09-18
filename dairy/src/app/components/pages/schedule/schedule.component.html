@@ -10,6 +10,10 @@
       <button type="button" class="week-button week-arrow" aria-label="Следующая неделя" [disabled]="loading" (click)="shiftWeek(1)"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>
     </div>
 
+    <div class="selected-week" aria-live="polite">
+      <span class="material-symbols-rounded" aria-hidden="true">calendar_month</span>
+      <div><span>Выбранная неделя</span><strong>{{ weekRange }}</strong></div>
+    </div>
     <!-- Выбор недели временно скрыт, пока определяется необходимость блока.
     <div class="calendar">
       <label>Выберите неделю:</label>
@@ -32,12 +36,54 @@
   } @else if (error) {
     <div class="schedule-card"><div class="schedule-empty">{{ error }}</div></div>
   } @else {
-    <div class="day-buttons">
+    <div class="mobile-day-picker">
+      <label for="schedule-day">День расписания</label>
+      <select id="schedule-day" [ngModel]="showWeek ? 'week' : selectedDayIndex"
+              (ngModelChange)="onDayChange($event)">
+        <option [ngValue]="'week'">Неделя</option>
+        @for (name of weekdayNames; track name; let i = $index) {
+          <option [ngValue]="i">{{ name }}</option>
+        }
+      </select>
+    </div>
+    <div class="day-buttons" role="group" aria-label="Период отображения">
+      <button type="button" [class.active]="showWeek" [attr.aria-pressed]="showWeek" (click)="showWeek = true">Неделя</button>
       @for (name of weekdayNames; track name; let i = $index) {
-        <button [class.active]="i === selectedDayIndex" (click)="selectDay(i)">{{ name }}</button>
+        <button type="button" [class.active]="!showWeek && i === selectedDayIndex" [attr.aria-pressed]="!showWeek && i === selectedDayIndex" (click)="selectDay(i)">{{ name }}</button>
       }
     </div>
 
+    @if (showWeek) {
+      <div class="schedule-card weekly-desktop">
+        <div class="current-date"><h2 class="day">Расписание на неделю</h2></div>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Расписание на неделю">
+          <table class="week-table">
+            <thead><tr><th scope="col">Пара</th>@for (day of weekDays; track day.date) { <th scope="col">{{ day.name }}<span class="week-date">{{ day.date }}</span></th> }</tr></thead>
+            <tbody>
+              @for (row of weekRows; track row.number) {
+                <tr><th scope="row"><span class="pair-number">{{ row.number }}</span></th>
+                  @for (items of row.days; track $index) {
+                    <td>@for (lesson of items; track lesson.eventId) {
+                      <div class="week-lesson"><strong>{{ lesson.subject }}</strong><span class="teacher-name">{{ teacherInitials(lesson.teacher) }}</span><span class="lesson-time">{{ lesson.time }}</span></div>
+                    } @empty { <span class="empty-slot" aria-label="Нет занятия">—</span> }</td>
+                  }
+                </tr>
+              } @empty { <tr><td [attr.colspan]="weekdayNames.length + 1" class="schedule-empty">На этой неделе занятий нет</td></tr> }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="weekly-mobile">
+        @for (day of weekDays; track day.date; let i = $index) {
+          <section class="schedule-card">
+            <div class="current-date"><h2 class="day">{{ day.name }}<span class="week-date">{{ day.date }}</span></h2><button type="button" class="day-arrow" [attr.aria-label]="'Открыть: ' + day.name" (click)="selectDay(i)"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button></div>
+            @for (lesson of day.lessons; track lesson.eventId) {
+              <div class="mobile-lesson"><div class="cell pair-cell"><span class="pair-number">{{ lesson.number }}</span><span class="pair-time">{{ lesson.time }}</span></div><div class="cell subject-cell"><strong>{{ lesson.subject }}</strong><span class="teacher-name">{{ teacherInitials(lesson.teacher) }}</span></div></div>
+            } @empty { <div class="schedule-empty">В этот день занятий нет</div> }
+          </section>
+        }
+      </div>
+    } @else {
     <div class="schedule-card lesson-card" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (touchcancel)="cancelSwipe()">
       <div class="schedule-card2">
         <div class="current-date">
@@ -51,7 +97,6 @@
           <div class="grid-header">Время</div>
           <div class="grid-header">Предмет</div>
           <div class="grid-header">Преподаватель</div>
-          <div class="grid-header">Аудитория</div>
 
           @for (lesson of lessons; track lesson.eventId) {
             <div class="cell pair-cell">
@@ -61,7 +106,6 @@
             <div class="cell time-cell">{{ lesson.time }}</div>
             <div class="cell subject-cell"><span>{{ lesson.subject }}</span><span class="mobile-detail teacher-name">{{ teacherInitials(lesson.teacher) }}</span></div>
             <div class="cell teacher-cell">{{ lesson.teacher }}</div>
-            <div class="cell room-cell">{{ lesson.room }}</div>
           }
         </div>
 
@@ -70,5 +114,6 @@
         }
       </div>
     </div>
+    }
   }
 </div>
