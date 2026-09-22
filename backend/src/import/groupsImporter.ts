@@ -15,7 +15,7 @@ import type { FileImportResult } from "./eventsFileImporter.js";
 /**
  * Импорт groups.xml - классы/группы и их состав.
  *
- * Структура (см. legacy old/e_diary_import.module, e_diary_import_load_groups):
+ * Структура формата импорта 1С:
  *   <file><MessageNo/>
  *     <groups>
  *       <group>

@@ -7,7 +7,7 @@ import type { FileImportResult } from "./eventsFileImporter.js";
 /**
  * Импорт final_marks.xml - итоговые оценки (год/итог/период/экзамен).
  *
- * Структура (см. пример в xml-cache/final_marks.xml и legacy old/e_diary_import.module):
+ * Структура формата final_marks.xml:
  *   <file><MessageNo/>
  *     <final_marks>
  *       <final_event>
