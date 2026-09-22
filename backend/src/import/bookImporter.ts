@@ -1,5 +1,7 @@
 import path from "node:path";
 import { db } from "../db/index.js";
+import { config } from "../config.js";
+import { hashPassword } from "../auth/password.js";
 import { sameRows, upsertChanged, upsertOne } from "./syncRows.js";
 import {
   parseXmlFile,
@@ -160,9 +162,7 @@ async function importPupils(book: XmlNode, ctx: Ctx): Promise<void> {
         ctx.fail++;
         continue;
       }
-      // TODO: полноценный слой авторизации (хэш пароля) проектируется отдельно.
-      // Пока кладём пароль как есть с префиксом, чтобы каркас работал end-to-end.
-      const passwordHash = password ? `plain:${password}` : "plain:";
+      const passwordHash = await hashPassword(password, config.passwordPepper);
       // status has a database default; an import must not reactivate an existing user.
       const { id: uid } = await upsertOne(db, "app_users", ["username"],
         { username, password_hash: passwordHash });

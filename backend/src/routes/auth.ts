@@ -50,7 +50,7 @@ authRouter.post("/login", async (req, res) => {
   }
 
   const user = await loadUserByLogin(login);
-  if (!user || !verifyPassword(password, user.password_hash)) {
+  if (!user || !(await verifyPassword(password, user.password_hash, config.passwordPepper))) {
     return res.status(401).json({ error: "Неверный логин или пароль" });
   }
 

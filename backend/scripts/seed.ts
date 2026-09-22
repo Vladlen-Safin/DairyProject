@@ -21,6 +21,7 @@
 import "dotenv/config";
 import { sql } from "kysely";
 import { db } from "../src/db/index.js";
+import { config } from "../src/config.js";
 import { hashPassword } from "../src/auth/password.js";
 
 // --- детерминированный ГПСЧ, чтобы сид был воспроизводимым --------------------
@@ -191,11 +192,11 @@ async function main() {
   const pupilUsers = await db
     .insertInto("app_users")
     .values(
-      pupilRows.map((p, i) => ({
+      await Promise.all(pupilRows.map(async (_p, i) => ({
         username: i === 0 ? "student" : `student${i + 1}`,
-        password_hash: hashPassword(i === 0 ? "student" : `student${i + 1}`),
+        password_hash: await hashPassword(i === 0 ? "student" : `student${i + 1}`, config.passwordPepper),
         status: 1,
-      })),
+      }))),
     )
     .returning(["id", "username"])
     .execute();
@@ -208,7 +209,7 @@ async function main() {
   // родитель демо-ученика
   const { id: parentUid } = await db
     .insertInto("app_users")
-    .values({ username: "parent", password_hash: hashPassword("parent"), status: 1 })
+    .values({ username: "parent", password_hash: await hashPassword("parent", config.passwordPepper), status: 1 })
     .returning("id")
     .executeTakeFirstOrThrow();
   await db
@@ -223,7 +224,7 @@ async function main() {
   // учитель (без привязки к ученику -> роль teacher)
   await db
     .insertInto("app_users")
-    .values({ username: "teacher", password_hash: hashPassword("teacher"), status: 1 })
+    .values({ username: "teacher", password_hash: await hashPassword("teacher", config.passwordPepper), status: 1 })
     .execute();
 
   // --- класс 9-А -------------------------------------------------------

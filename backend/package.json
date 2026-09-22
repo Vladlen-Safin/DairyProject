@@ -8,13 +8,17 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "migrate": "tsx scripts/migrate.ts",
+    "users:hash": "tsx scripts/migrate-passwords.ts",
+    "users:hash:apply": "tsx scripts/migrate-passwords.ts --apply",
     "seed": "tsx scripts/seed.ts",
     "ftp:check": "tsx scripts/ftpCheck.ts",
     "ftp:peek": "tsx scripts/ftpPeek.ts",
     "ftp:inspect": "tsx scripts/ftpInspectMessages.ts"
   },
   "dependencies": {
+    "@types/bcrypt": "^6.0.0",
     "basic-ftp": "^5.0.5",
+    "bcrypt": "^6.0.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "fast-xml-parser": "^4.4.1",

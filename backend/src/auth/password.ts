@@ -1,36 +1,28 @@
-import crypto from "node:crypto";
+import bcrypt from "bcrypt";
 
-/**
- * Хэш пароля для демо-пользователей seed-скрипта: `scrypt:<saltHex>:<hashHex>`.
- */
-export function hashPassword(password: string): string {
-  const salt = crypto.randomBytes(16);
-  const hash = crypto.scryptSync(password, salt, 64);
-  return `scrypt:${salt.toString("hex")}:${hash.toString("hex")}`;
+// OWASP рекомендует для bcrypt work factor не ниже 10. 12 даёт достаточную
+// защиту при приемлемом времени входа для текущего числа пользователей.
+const BCRYPT_ROUNDS = 12;
+
+function passwordWithPepper(password: string, pepper: string): string {
+  // Нулевой разделитель исключает неоднозначность склейки значений.
+  return `${pepper}\0${password}`;
+}
+
+/** Создаёт bcrypt-хэш; соль bcrypt генерирует самостоятельно. */
+export async function hashPassword(password: string, pepper: string): Promise<string> {
+  return bcrypt.hash(passwordWithPepper(password, pepper), BCRYPT_ROUNDS);
 }
 
 /**
- * Проверка пароля. Поддерживает два формата хранения в app_users.password_hash:
- *  - `scrypt:<salt>:<hash>` - пользователи из seed-скрипта;
- *  - `plain:<password>`     - учётки из выгрузки 1С (book.xml), пока нет
- *                             полноценного слоя авторизации.
+ * Проверяет только bcrypt-хэш. Пароли в открытом виде и старый scrypt-формат
+ * намеренно не поддерживаются: их нужно перевести скриптом migrate-passwords.
  */
-export function verifyPassword(password: string, stored: string): boolean {
-  if (stored.startsWith("plain:")) {
-    return safeEqual(password, stored.slice("plain:".length));
-  }
-  if (stored.startsWith("scrypt:")) {
-    const [, saltHex, hashHex] = stored.split(":");
-    if (!saltHex || !hashHex) return false;
-    const hash = crypto.scryptSync(password, Buffer.from(saltHex, "hex"), 64);
-    return safeEqual(hash.toString("hex"), hashHex);
-  }
-  return false;
+export async function verifyPassword(password: string, stored: string, pepper: string): Promise<boolean> {
+  if (!isBcryptHash(stored)) return false;
+  return bcrypt.compare(passwordWithPepper(password, pepper), stored);
 }
 
-function safeEqual(a: string, b: string): boolean {
-  const ba = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ba.length !== bb.length) return false;
-  return crypto.timingSafeEqual(ba, bb);
+export function isBcryptHash(value: string): boolean {
+  return /^\$2[aby]\$\d{2}\$/.test(value);
 }

@@ -35,6 +35,10 @@ export const config = {
   // В проде обязательно задать JWT_SECRET в окружении.
   jwtSecret: process.env.JWT_SECRET || "dev-insecure-secret-change-me",
 
+  // Дополнительный секрет (pepper) для паролей. Он не хранится в БД и должен
+  // быть одинаковым у всех экземпляров backend.
+  passwordPepper: required("PASSWORD_PEPPER"),
+
   ftp: {
     host: required("FTP_HOST"),
     port: Number(process.env.FTP_PORT ?? 21),
