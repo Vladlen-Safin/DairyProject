@@ -1,5 +1,6 @@
 import path from "node:path";
 import { db } from "../db/index.js";
+import { syncChildren, upsertOne } from "./syncRows.js";
 import {
   parseXmlFile,
   readMessageNo,
@@ -88,19 +89,9 @@ export async function importGroupsFile(
     const termscheme = groupdata?.termscheme as XmlNode | undefined;
     const termtype = termscheme ? (termTypeByExtId.get(str(termscheme.id)) ?? null) : null;
 
-    const { id: groupId } = await db
-      .insertInto("ediary_groups")
-      .values({ ext_id: extId, schoolyear: schoolyearId, parallel, shift, termtype })
-      .onConflict((oc) =>
-        oc.columns(["ext_id", "schoolyear"]).doUpdateSet({ parallel, shift, termtype }),
-      )
-      .returning("id")
-      .executeTakeFirstOrThrow();
+    const { id: groupId } = await upsertOne(db, "ediary_groups", ["ext_id", "schoolyear"],
+      { ext_id: extId, schoolyear: schoolyearId, parallel, shift, termtype });
     success++;
-
-    // Состав группы 1С шлёт целиком - перезаписываем (clear_sub group_id)
-    await db.deleteFrom("ediary_groups_terms").where("group_id", "=", groupId).execute();
-    await db.deleteFrom("ediary_groups_pupils").where("group_id", "=", groupId).execute();
 
     // периоды обучения группы
     const termRowsToInsert: {
@@ -120,10 +111,8 @@ export async function importGroupsFile(
       }
       termRowsToInsert.push({ group_id: groupId, term: termId, date_start: dateStart, date_end: dateEnd });
     }
-    if (termRowsToInsert.length > 0) {
-      await db.insertInto("ediary_groups_terms").values(termRowsToInsert).execute();
-      success += termRowsToInsert.length;
-    }
+    await syncChildren(db, "ediary_groups_terms", "group_id", [groupId], termRowsToInsert);
+    success += termRowsToInsert.length;
 
     // ученики группы; пустой date_end -> конец учебного года
     const schoolyearEnd = await db
@@ -150,10 +139,8 @@ export async function importGroupsFile(
       }
       pupilRowsToInsert.push({ group_id: groupId, pupil: pupilId, date_start: dateStart, date_end: dateEnd });
     }
-    if (pupilRowsToInsert.length > 0) {
-      await db.insertInto("ediary_groups_pupils").values(pupilRowsToInsert).execute();
-      success += pupilRowsToInsert.length;
-    }
+    await syncChildren(db, "ediary_groups_pupils", "group_id", [groupId], pupilRowsToInsert);
+    success += pupilRowsToInsert.length;
   }
 
   return { success, fail, errorLog, done: true };

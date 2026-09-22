@@ -1,5 +1,6 @@
 import path from "node:path";
 import { db } from "../db/index.js";
+import { sameRows, upsertChanged, upsertOne } from "./syncRows.js";
 import {
   parseXmlFile,
   readMessageNo,
@@ -65,11 +66,7 @@ async function importSchoolyears(book: XmlNode, ctx: Ctx): Promise<void> {
       ctx.fail++;
       continue;
     }
-    await db
-      .insertInto("ediary_schoolyears")
-      .values({ ext_id: extId, name, start, end })
-      .onConflict((oc) => oc.column("ext_id").doUpdateSet({ name, start, end }))
-      .execute();
+    await upsertChanged(db, "ediary_schoolyears", ["ext_id"], [{ ext_id: extId, name, start, end }]);
     ctx.success++;
   }
 }
@@ -90,17 +87,10 @@ async function importTermTypes(book: XmlNode, ctx: Ctx): Promise<void> {
       ctx.fail++;
       continue;
     }
-    const { id: typeId } = await db
-      .insertInto("ediary_term_types")
-      .values({ ext_id: extId, name })
-      .onConflict((oc) => oc.column("ext_id").doUpdateSet({ name }))
-      .returning("id")
-      .executeTakeFirstOrThrow();
+    const { id: typeId } = await upsertOne(db, "ediary_term_types", ["ext_id"], { ext_id: extId, name });
     ctx.success++;
 
-    // Периоды обучения полностью перезаписываются для своей схемы (clear_sub)
-    await db.deleteFrom("ediary_terms").where("type_id", "=", typeId).execute();
-
+    const termIds: string[] = [];
     for (const term of asArray(tt.term) as XmlNode[]) {
       const termExtId = str(term.id);
       const termName = str(term.name);
@@ -109,13 +99,15 @@ async function importTermTypes(book: XmlNode, ctx: Ctx): Promise<void> {
         ctx.fail++;
         continue;
       }
-      await db
-        .insertInto("ediary_terms")
-        .values({ ext_id: termExtId, name: termName, type_id: typeId })
-        .onConflict((oc) => oc.columns(["ext_id", "type_id"]).doUpdateSet({ name: termName }))
-        .execute();
+      termIds.push(termExtId);
+      await upsertChanged(db, "ediary_terms", ["ext_id", "type_id"],
+        [{ ext_id: termExtId, name: termName, type_id: typeId }]);
       ctx.success++;
     }
+    // Preserve IDs of surviving periods and their group references.
+    let removed = db.deleteFrom("ediary_terms").where("type_id", "=", typeId);
+    if (termIds.length) removed = removed.where("ext_id", "not in", termIds);
+    await removed.execute();
   }
 }
 
@@ -137,11 +129,7 @@ async function importSimpleRef(
       ctx.fail++;
       continue;
     }
-    await db
-      .insertInto(table)
-      .values({ ext_id: extId, name })
-      .onConflict((oc) => oc.column("ext_id").doUpdateSet({ name }))
-      .execute();
+    await upsertChanged(db, table, ["ext_id"], [{ ext_id: extId, name }]);
     ctx.success++;
   }
 }
@@ -157,12 +145,7 @@ async function importPupils(book: XmlNode, ctx: Ctx): Promise<void> {
       ctx.fail++;
       continue;
     }
-    const { id: pupilId } = await db
-      .insertInto("ediary_pupils")
-      .values({ ext_id: extId })
-      .onConflict((oc) => oc.column("ext_id").doUpdateSet({ ext_id: extId }))
-      .returning("id")
-      .executeTakeFirstOrThrow();
+    const { id: pupilId } = await upsertOne(db, "ediary_pupils", ["ext_id"], { ext_id: extId });
     ctx.success++;
 
     const usersNode = pupil.users as XmlNode | undefined;
@@ -180,18 +163,10 @@ async function importPupils(book: XmlNode, ctx: Ctx): Promise<void> {
       // TODO: полноценный слой авторизации (хэш пароля) проектируется отдельно.
       // Пока кладём пароль как есть с префиксом, чтобы каркас работал end-to-end.
       const passwordHash = password ? `plain:${password}` : "plain:";
-      const { id: uid } = await db
-        .insertInto("app_users")
-        .values({ username, password_hash: passwordHash, status: 1 })
-        .onConflict((oc) => oc.column("username").doUpdateSet({ password_hash: passwordHash }))
-        .returning("id")
-        .executeTakeFirstOrThrow();
-
-      await db
-        .insertInto("ediary_pupils_accounts")
-        .values({ pupil: pupilId, type, uid })
-        .onConflict((oc) => oc.column("uid").doUpdateSet({ pupil: pupilId, type }))
-        .execute();
+      // status has a database default; an import must not reactivate an existing user.
+      const { id: uid } = await upsertOne(db, "app_users", ["username"],
+        { username, password_hash: passwordHash });
+      await upsertChanged(db, "ediary_pupils_accounts", ["uid"], [{ pupil: pupilId, type, uid }]);
 
       uidByType.set(type, uid);
       ctx.success++;
@@ -234,9 +209,8 @@ async function importCalls(book: XmlNode, ctx: Ctx): Promise<void> {
       continue;
     }
 
-    // Смены учебного года перезаписываются целиком; звонки уйдут по ON DELETE CASCADE
-    await db.deleteFrom("ediary_shifts").where("schoolyear", "=", schoolyearId).execute();
-
+    type Lesson = { lessonnumber: number; weekday: number; timebegin: string; timeend: string };
+    const shifts: { name: number; parallelstart: number; parallelend: number; lessons: Lesson[] }[] = [];
     for (const shiftNode of asArray(syNode.shift) as XmlNode[]) {
       const name = intOrNull(shiftNode.name);
       const parallelstart = intOrNull(shiftNode.parallelstart);
@@ -246,11 +220,8 @@ async function importCalls(book: XmlNode, ctx: Ctx): Promise<void> {
         ctx.fail++;
         continue;
       }
-      const { id: shiftId } = await db
-        .insertInto("ediary_shifts")
-        .values({ name, schoolyear: schoolyearId, parallelstart, parallelend })
-        .returning("id")
-        .executeTakeFirstOrThrow();
+      const lessons: Lesson[] = [];
+      shifts.push({ name, parallelstart, parallelend, lessons });
       ctx.success++;
 
       for (const lessonNode of asArray(shiftNode.lesson) as XmlNode[]) {
@@ -267,20 +238,30 @@ async function importCalls(book: XmlNode, ctx: Ctx): Promise<void> {
           continue;
         }
         // legacy: один <weekday> = одна строка ediary_lessons
-        await db
-          .insertInto("ediary_lessons")
-          .values(
-            weekdays.map((weekday) => ({
-              shift: shiftId,
-              lessonnumber,
-              weekday,
-              timebegin,
-              timeend,
-            })),
-          )
-          .execute();
+        lessons.push(...weekdays.map((weekday) => ({ lessonnumber, weekday, timebegin, timeend })));
         ctx.success += weekdays.length;
       }
     }
+    const previous = await db.selectFrom("ediary_shifts").selectAll()
+      .where("schoolyear", "=", schoolyearId).execute();
+    const previousLessons = previous.length ? await db.selectFrom("ediary_lessons").selectAll()
+      .where("shift", "in", previous.map((shift) => shift.id)).execute() : [];
+    const normalizeLessons = (lessons: Lesson[]) => JSON.stringify(lessons.map((lesson) =>
+      JSON.stringify([lesson.lessonnumber, lesson.weekday, lesson.timebegin, lesson.timeend])).sort());
+    const before = previous.map((shift) => ({
+      name: shift.name, parallelstart: shift.parallelstart, parallelend: shift.parallelend,
+      lessons: normalizeLessons(previousLessons.filter((lesson) => lesson.shift === shift.id)),
+    }));
+    const after = shifts.map(({ lessons, ...shift }) => ({ ...shift, lessons: normalizeLessons(lessons) }));
+    if (sameRows(before, after)) continue;
+    await db.transaction().execute(async (trx) => {
+      await trx.deleteFrom("ediary_shifts").where("schoolyear", "=", schoolyearId).execute();
+      for (const { lessons, ...shift } of shifts) {
+        const { id } = await trx.insertInto("ediary_shifts").values({ ...shift, schoolyear: schoolyearId })
+          .returning("id").executeTakeFirstOrThrow();
+        if (lessons.length) await trx.insertInto("ediary_lessons")
+          .values(lessons.map((lesson) => ({ ...lesson, shift: id }))).execute();
+      }
+    });
   }
 }

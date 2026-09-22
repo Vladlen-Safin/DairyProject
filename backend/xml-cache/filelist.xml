@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<filelist creation="2026-09-17T12:55:24">
-	<MessageNo>12</MessageNo>
+<filelist creation="2026-09-21T02:20:31">
+	<MessageNo>2074</MessageNo>
 	<files>
 		<file>
 			<filename>book.xml</filename>
@@ -12,14 +12,6 @@
 		</file>
 		<file>
 			<filename>events.xml</filename>
-			<type>events</type>
-		</file>
-		<file>
-			<filename>events1.xml</filename>
-			<type>events</type>
-		</file>
-		<file>
-			<filename>events2.xml</filename>
 			<type>events</type>
 		</file>
 		<file>

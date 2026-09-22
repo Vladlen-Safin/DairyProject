@@ -1,5 +1,6 @@
 import path from "node:path";
 import { db } from "../db/index.js";
+import { syncChildren, upsertOne } from "./syncRows.js";
 import { parseXmlFile, readMessageNo, asArray, str } from "../xml/parseXmlFile.js";
 import type { FileImportResult } from "./eventsFileImporter.js";
 
@@ -83,30 +84,14 @@ export async function importFinalMarksFile(
       continue;
     }
 
-    const { id: eventId } = await db
-      .insertInto("ediary_final_events")
-      .values({
-        ext_id: extId,
-        type,
-        term_ext_id: termExtId,
-        subject: subjectId!,
-        schoolyear: schoolyearId!,
-        group_id: groupId!,
-      })
-      .onConflict((oc) =>
-        oc.column("ext_id").doUpdateSet({
-          type,
-          term_ext_id: termExtId,
-          subject: subjectId!,
-          schoolyear: schoolyearId!,
-          group_id: groupId!,
-        }),
-      )
-      .returning("id")
-      .executeTakeFirstOrThrow();
-
-    // 1С шлёт событие с полным набором оценок - заменяем целиком (аналог clear_sub)
-    await db.deleteFrom("ediary_final_marks").where("event", "=", eventId).execute();
+    const { id: eventId } = await upsertOne(db, "ediary_final_events", ["ext_id"], {
+      ext_id: extId,
+      type,
+      term_ext_id: termExtId,
+      subject: subjectId!,
+      schoolyear: schoolyearId!,
+      group_id: groupId!,
+    });
 
     const markRows: { event: number; pupil: number; value: string }[] = [];
     for (const p of asArray(ev.pupil) as Record<string, unknown>[]) {
@@ -124,9 +109,7 @@ export async function importFinalMarksFile(
       }
       markRows.push({ event: eventId, pupil: pupilId, value });
     }
-    if (markRows.length > 0) {
-      await db.insertInto("ediary_final_marks").values(markRows).execute();
-    }
+    await syncChildren(db, "ediary_final_marks", "event", [eventId], markRows);
     success++;
   }
 

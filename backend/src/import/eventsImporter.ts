@@ -1,8 +1,9 @@
-import type { Kysely } from "kysely";
+import { sql, type Kysely } from "kysely";
 import type { DB } from "../db/types.js";
 import type { RawEvent } from "../xml/eventsTypes.js";
 import { asArray } from "../xml/eventsTypes.js";
 import { findSchoolyearIdForDate, type HelperCaches } from "./helperTables.js";
+import { syncChildren, upsertChanged } from "./syncRows.js";
 
 export interface ImportStats {
   success: number;
@@ -15,8 +16,12 @@ export async function importEventsBatch(
   batch: RawEvent[],
   errorLog: string[],
 ): Promise<ImportStats> {
-  // Keep event row locks until all child rows have been replaced.
-  return db.transaction().execute((trx) => importEventsBatchInTransaction(trx, caches, batch, errorLog));
+  return db.transaction().execute(async (trx) => {
+    // Serialize event import batches without locking/writing every unchanged tuple.
+    // Include the schema so isolated test imports never lock the live importer.
+    await sql`select pg_advisory_xact_lock(746120, hashtext(current_schema()))`.execute(trx);
+    return importEventsBatchInTransaction(trx, caches, batch, errorLog);
+  });
 }
 
 async function importEventsBatchInTransaction(
@@ -93,33 +98,11 @@ async function importEventsBatchInTransaction(
 
   if (toUpsert.length === 0) return stats;
 
-  const upserted = await db
-    .insertInto("ediary_events")
-    .values(toUpsert.map(({ raw, ...row }) => row))
-    .onConflict((oc) =>
-      oc.column("ext_id").doUpdateSet((eb) => ({
-        date: eb.ref("excluded.date"),
-        lesson: eb.ref("excluded.lesson"),
-        subject: eb.ref("excluded.subject"),
-        teacher: eb.ref("excluded.teacher"),
-        group_id: eb.ref("excluded.group_id"),
-        cabinet: eb.ref("excluded.cabinet"),
-        homework: eb.ref("excluded.homework"),
-      })),
-    )
-    .returning(["id", "ext_id"])
-    .execute();
+  const upserted = await upsertChanged(db, "ediary_events", ["ext_id"],
+    toUpsert.map(({ raw, ...row }) => row));
 
   const idByExtId = new Map(upserted.map((r) => [r.ext_id, r.id]));
   const eventIds = upserted.map((r) => r.id);
-
-  // Полная замена дочерних данных - 1С каждый раз шлёт событие с полным набором
-  // оценок/комментариев/пропусков, а не diff (аналог clear_sub в PHP-версии).
-  if (eventIds.length > 0) {
-    await db.deleteFrom("ediary_comments").where("event", "in", eventIds).execute();
-    await db.deleteFrom("ediary_marks").where("event", "in", eventIds).execute();
-    await db.deleteFrom("ediary_missings").where("event", "in", eventIds).execute();
-  }
 
   const commentRows: { event: number; pupil: number; text: string }[] = [];
   const markRows: { event: number; pupil: number; value: string; comment: string | null }[] = [];
@@ -165,12 +148,12 @@ async function importEventsBatchInTransaction(
     stats.success++;
   }
 
-  if (commentRows.length) await db.insertInto("ediary_comments").values(commentRows).execute();
+  await syncChildren(db, "ediary_comments", "event", eventIds, commentRows);
 
   // Полностью одинаковые оценки (тот же event+pupil+value+comment) в выгрузке 1С -
   // дубль, а не две разные оценки за урок. Разные value или разные comment - сохраняем
   // оба (у ediary_marks намеренно нет UNIQUE(event, pupil) - оценок может быть несколько).
-  if (markRows.length) {
+  {
     const seenMarks = new Set<string>();
     const uniqueMarks = markRows.filter((r) => {
       const key = `${r.event}:${r.pupil}:${r.value}:${r.comment ?? ""}`;
@@ -178,12 +161,12 @@ async function importEventsBatchInTransaction(
       seenMarks.add(key);
       return true;
     });
-    await db.insertInto("ediary_marks").values(uniqueMarks).execute();
+    await syncChildren(db, "ediary_marks", "event", eventIds, uniqueMarks);
   }
 
   // В выгрузке 1С один и тот же ученик может встретиться в <missing> одного события
   // несколько раз - на ediary_missings есть UNIQUE(event, pupil), поэтому дедуплицируем.
-  if (missingRows.length) {
+  {
     const seen = new Set<string>();
     const uniqueMissings = missingRows.filter((r) => {
       const key = `${r.event}:${r.pupil}`;
@@ -191,11 +174,7 @@ async function importEventsBatchInTransaction(
       seen.add(key);
       return true;
     });
-    await db
-      .insertInto("ediary_missings")
-      .values(uniqueMissings)
-      .onConflict((oc) => oc.columns(["event", "pupil"]).doNothing())
-      .execute();
+    await syncChildren(db, "ediary_missings", "event", eventIds, uniqueMissings);
   }
 
   return stats;

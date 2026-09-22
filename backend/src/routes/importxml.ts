@@ -126,6 +126,8 @@ import {
 const NOT_FOUND_MESSAGE = "Не найден файл, либо номер сообщения в файле не соответствует выгрузке";
 
 export async function importXmlHandler(req: Request, res: Response) {
+
+  console.log("Тест 1с:")
   res.type("text/plain; charset=utf-8");
   try {
     await handleImport(req, res);
