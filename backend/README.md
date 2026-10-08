@@ -1,7 +1,7 @@
 # ediary-backend
 
 Бэкенд «Электронного дневника»: импортирует выгрузку 1С (XML с FTP) в PostgreSQL
-и отдаёт данные фронтенду (Angular, каталог [`../dairy`](../dairy)).
+и отдаёт данные фронтенду (Angular, каталог [`../diary`](../diary)).
 
 Бэкенд использует потоковый разбор больших XML, чекпоинты в БД вместо
 `.tmp`-файлов и даты в формате `YYYY-MM-DD` без сдвигов таймзоны.
@@ -204,7 +204,7 @@ node --test tests/*.test.mjs
 ## Фронтенд
 
 ```bash
-cd ../dairy
+cd ../diary
 npm install
 npm start          # http://localhost:4200
 ```
