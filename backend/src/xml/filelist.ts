@@ -1,3 +1,4 @@
+import { importStep } from "../import/diagnostics.js";
 import fs from "node:fs/promises";
 import { XMLParser } from "fast-xml-parser";
 
@@ -14,8 +15,8 @@ export interface FileList {
 const parser = new XMLParser();
 
 export async function readFileList(path: string): Promise<FileList> {
-  const xml = await fs.readFile(path, "utf-8");
-  const doc = parser.parse(xml);
+  const xml = await importStep("xml.read", () => fs.readFile(path, "utf-8"), { path });
+  const doc = await importStep("xml.parse", () => parser.parse(xml), { path, bytes: Buffer.byteLength(xml) });
   const root = doc.filelist;
   const rawFiles = root.files?.file;
   const files: FileListEntry[] = (Array.isArray(rawFiles) ? rawFiles : rawFiles ? [rawFiles] : [])

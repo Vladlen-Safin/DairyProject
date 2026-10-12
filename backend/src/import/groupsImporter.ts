@@ -1,3 +1,4 @@
+import { importLog } from "../import/diagnostics.js";
 import path from "node:path";
 import { db } from "../db/index.js";
 import { syncChildren, upsertOne } from "./syncRows.js";
@@ -47,8 +48,10 @@ export async function importGroupsFile(
   messageno: string,
 ): Promise<FileImportResult | false> {
   const doc = await parseXmlFile(path.join(xmlFolder, filename));
-  if (!doc) return false;
-  if (readMessageNo(doc) !== messageno) return false;
+  if (!doc) { importLog("xml.missing", { filename }); return false; }
+  const actualMessageNo = readMessageNo(doc);
+  importLog("xml.messageNo", { filename, expected: messageno, actual: actualMessageNo, matches: actualMessageNo === messageno });
+  if (actualMessageNo !== messageno) return false;
 
   const root = (doc.file ?? doc) as XmlNode;
   const groupsNode = root.groups as XmlNode | undefined;

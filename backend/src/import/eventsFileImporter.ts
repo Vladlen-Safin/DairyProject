@@ -1,3 +1,4 @@
+import { importLog, importStep } from "../import/diagnostics.js";
 import fs from "node:fs";
 import path from "node:path";
 import { db } from "../db/index.js";
@@ -23,15 +24,16 @@ export async function importEventsFile(
   timeBudgetMs: number,
 ): Promise<FileImportResult | false> {
   const filePath = path.join(xmlFolder, filename);
-  if (!fs.existsSync(filePath)) return false;
+  if (!fs.existsSync(filePath)) { importLog("xml.missing", { filename }); return false; }
 
-  const fileMessageNo = await peekMessageNo(filePath);
+  const fileMessageNo = await importStep("events.readMessageNo", () => peekMessageNo(filePath), { filename });
+  importLog("xml.messageNo", { filename, expected: messageno, actual: fileMessageNo, matches: fileMessageNo === messageno });
   if (fileMessageNo !== messageno) return false;
 
-  const checkpoint = await getCheckpoint(db, messageno, filename);
+  const checkpoint = await importStep("events.loadCheckpoint", () => getCheckpoint(db, messageno, filename));
   const alreadyProcessed = checkpoint?.processed_count ?? 0;
 
-  const caches = await loadHelperCaches(db);
+  const caches = await importStep("events.loadCaches", () => loadHelperCaches(db));
   const errorLog: string[] = [];
   let success = 0;
   let fail = 0;
@@ -40,7 +42,7 @@ export async function importEventsFile(
 
   const flush = async () => {
     if (batch.length === 0) return;
-    const stats = await importEventsBatch(db, caches, batch, errorLog);
+    const stats = await importStep("events.batch", () => importEventsBatch(db, caches, batch, errorLog), { filename, count: batch.length, seen });
     success += stats.success;
     fail += stats.fail;
     batch = [];
@@ -50,7 +52,7 @@ export async function importEventsFile(
   const signal = { aborted: false };
   const stream = fs.createReadStream(filePath, { encoding: "utf-8" });
 
-  await readChunkedXml(stream, {
+  await importStep("events.stream", () => readChunkedXml(stream, {
     collectPath: ["file", "events", "event"],
     signal,
     onItem: async (item) => {
@@ -64,16 +66,16 @@ export async function importEventsFile(
         signal.aborted = true;
       }
     },
-  });
+  }), { filename, alreadyProcessed });
 
   await flush();
 
   if (signal.aborted) {
-    await saveCheckpoint(db, messageno, filename, seen);
+    await importStep("events.saveCheckpoint", () => saveCheckpoint(db, messageno, filename, seen), { seen });
     return { success, fail, errorLog, done: false };
   }
 
-  await clearCheckpoint(db, messageno, filename);
+  await importStep("events.clearCheckpoint", () => clearCheckpoint(db, messageno, filename));
   return { success, fail, errorLog, done: true };
 }
 

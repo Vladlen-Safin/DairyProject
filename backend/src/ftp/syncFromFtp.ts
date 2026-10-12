@@ -1,3 +1,4 @@
+import { importStep } from "../import/diagnostics.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { withFtpClient } from "./ftpClient.js";
@@ -5,7 +6,7 @@ import { config } from "../config.js";
 import { db } from "../db/index.js";
 
 async function ensureDir(dir: string) {
-  await fs.mkdir(dir, { recursive: true });
+  await importStep("cache.mkdir", () => fs.mkdir(dir, { recursive: true }), { path: path.resolve(dir) });
 }
 
 /**
@@ -15,7 +16,7 @@ async function ensureDir(dir: string) {
 export async function downloadFilelist(): Promise<string> {
   await ensureDir(config.xmlLocalCacheDir);
   const localPath = path.join(config.xmlLocalCacheDir, "filelist.xml");
-  await withFtpClient((client) => client.downloadTo(localPath, "filelist.xml"));
+  await withFtpClient((client) => importStep("ftp.download", () => client.downloadTo(localPath, "filelist.xml"), { filename: "filelist.xml", localPath: path.resolve(localPath) }));
   return localPath;
 }
 
@@ -49,7 +50,7 @@ export async function downloadMessageFiles(filenames: string[]): Promise<void> {
   await withFtpClient(async (client) => {
     for (const filename of filenames) {
       const localPath = path.join(config.xmlLocalCacheDir, filename);
-      await client.downloadTo(localPath, filename);
+      await importStep("ftp.download", () => client.downloadTo(localPath, filename), { filename, localPath: path.resolve(localPath) });
     }
   });
 }
@@ -60,7 +61,7 @@ export async function downloadMessageFiles(filenames: string[]): Promise<void> {
  */
 export async function uploadResult(): Promise<void> {
   const localPath = path.join(config.xmlLocalCacheDir, "result.xml");
-  await withFtpClient((client) => client.uploadFrom(localPath, "result.xml"));
+  await withFtpClient((client) => importStep("ftp.upload", () => client.uploadFrom(localPath, "result.xml"), { filename: "result.xml", remoteDir: config.ftp.remoteDir }));
 }
 
 /**
@@ -69,6 +70,6 @@ export async function uploadResult(): Promise<void> {
  */
 export async function cleanupMessageFiles(filenames: string[]): Promise<void> {
   for (const filename of filenames) {
-    await fs.rm(path.join(config.xmlLocalCacheDir, filename), { force: true });
+    await importStep("cache.remove", () => fs.rm(path.join(config.xmlLocalCacheDir, filename), { force: true }), { filename });
   }
 }

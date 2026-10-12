@@ -1,3 +1,4 @@
+import { importLog, importStep } from "../import/diagnostics.js";
 import path from "node:path";
 import { db } from "../db/index.js";
 import { config } from "../config.js";
@@ -32,18 +33,20 @@ export async function importBookFile(
   messageno: string,
 ): Promise<FileImportResult | false> {
   const doc = await parseXmlFile(path.join(xmlFolder, filename));
-  if (!doc) return false;
-  if (readMessageNo(doc) !== messageno) return false;
+  if (!doc) { importLog("xml.missing", { filename }); return false; }
+  const actualMessageNo = readMessageNo(doc);
+  importLog("xml.messageNo", { filename, expected: messageno, actual: actualMessageNo, matches: actualMessageNo === messageno });
+  if (actualMessageNo !== messageno) return false;
 
   const book = (doc.book ?? doc.file ?? doc) as XmlNode;
   const ctx: Ctx = { errorLog: [], success: 0, fail: 0 };
 
-  await importSchoolyears(book, ctx);
-  await importTermTypes(book, ctx);
-  await importSimpleRef(book, ctx, "teachers", "teacher", "ediary_teachers");
-  await importSimpleRef(book, ctx, "subjects", "subject", "ediary_subjects");
-  await importPupils(book, ctx);
-  await importCalls(book, ctx);
+  await importStep("book.importSchoolyears", () => importSchoolyears(book, ctx));
+  await importStep("book.importTermTypes", () => importTermTypes(book, ctx));
+  await importStep("book.importSimpleRef", () => importSimpleRef(book, ctx, "teachers", "teacher", "ediary_teachers"));
+  await importStep("book.importSimpleRef", () => importSimpleRef(book, ctx, "subjects", "subject", "ediary_subjects"));
+  await importStep("book.importPupils", () => importPupils(book, ctx));
+  await importStep("book.importCalls", () => importCalls(book, ctx));
 
   return { success: ctx.success, fail: ctx.fail, errorLog: ctx.errorLog, done: true };
 }

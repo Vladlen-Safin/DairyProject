@@ -1,3 +1,4 @@
+import { importStep } from "../import/diagnostics.js";
 import fs from "node:fs/promises";
 import { XMLParser } from "fast-xml-parser";
 
@@ -24,13 +25,13 @@ export type XmlNode = Record<string, unknown>;
 export async function parseXmlFile(path: string): Promise<XmlNode | null> {
   let raw: string;
   try {
-    raw = await fs.readFile(path, "utf-8");
+    raw = await importStep("xml.read", () => fs.readFile(path, "utf-8"), { path });
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw err;
   }
   // Срезаем BOM - fast-xml-parser не всегда его переваривает
-  return parser.parse(raw.replace(/^﻿/, "")) as XmlNode;
+  return await importStep("xml.parse", () => parser.parse(raw.replace(/^﻿/, "")) as XmlNode, { path, bytes: Buffer.byteLength(raw) });
 }
 
 /** Обёртка над возможным «одиночка | массив | undefined» из fast-xml-parser. */

@@ -1,3 +1,4 @@
+import { importStep } from "../import/diagnostics.js";
 import { Client, FileInfo } from "basic-ftp";
 import { config } from "../config.js";
 
@@ -6,16 +7,16 @@ export async function withFtpClient<T>(fn: (client: Client) => Promise<T>): Prom
   client.ftp.verbose = process.env.FTP_VERBOSE === "true";
 
   try {
-    await client.access({
+    await importStep("ftp.connect", () => client.access({
       host: config.ftp.host,
       port: config.ftp.port,
       user: config.ftp.user,
       password: config.ftp.password,
       secure: config.ftp.secure,
-    });
+    }), { host: config.ftp.host, port: config.ftp.port, secure: config.ftp.secure });
 
     if (config.ftp.remoteDir && config.ftp.remoteDir !== "/") {
-      await client.cd(config.ftp.remoteDir);
+      await importStep("ftp.cd", () => client.cd(config.ftp.remoteDir), { remoteDir: config.ftp.remoteDir });
     }
 
     return await fn(client);
