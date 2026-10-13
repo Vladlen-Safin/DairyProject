@@ -42,7 +42,9 @@ export async function importEventsFile(
 
   const flush = async () => {
     if (batch.length === 0) return;
-    const stats = await importStep("events.batch", () => importEventsBatch(db, caches, batch, errorLog), { filename, count: batch.length, seen });
+    const stats = await importStep("events.batch", () => importEventsBatch(db, caches, batch, errorLog, {
+      messageno, filename, firstPosition: seen - batch.length + 1,
+    }), { filename, count: batch.length, seen });
     success += stats.success;
     fail += stats.fail;
     batch = [];

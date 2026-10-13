@@ -28,11 +28,13 @@ test('concurrent requests retain their own message and request IDs; errors omit 
 });
 
 // Execute the compiled handler with in-memory dependencies: no production DB or FTP calls.
-async function harness({ uploadFails = false, writeFails = false, done = true, already = false } = {}) {
+async function harness({ uploadFails = false, writeFails = false, done = true, already = false, eventsFail = false, eventsMissing = false } = {}) {
   const calls = [];
   let xml;
   const dependencies = {
     ...diagnostics, path, XMLBuilder, db: {},
+    publishPlannedEvents: async () => calls.push('publish'),
+    discardPlannedStage: async () => calls.push('discard'),
     fs: { writeFile: async (_path, content) => {
       calls.push('write');
       if (writeFails) throw Object.assign(new Error('disk failure'), { code: 'EACCES' });
@@ -44,24 +46,24 @@ async function harness({ uploadFails = false, writeFails = false, done = true, a
     findMessageResult: async () => already ? {} : undefined,
     isFreshMessage: async () => true,
     downloadMessageFiles: async () => {},
-    importEventsFile: async () => ({ success: 1, fail: 0, errorLog: [], done }),
+    importEventsFile: async () => eventsMissing ? false : ({ success: 1, fail: eventsFail ? 1 : 0, errorLog: eventsFail ? ['invalid event'] : [], done }),
     upsertFileResult: async (_db, filename) => calls.push(`save:${filename}`),
-    allResultsForMessage: async () => [],
+    allResultsForMessage: async () => [{ file: 'events.xml', fail: eventsFail ? 1 : 0, errors: eventsFail || eventsMissing ? 'invalid event' : '' }],
     uploadResult: async () => { calls.push('upload'); if (uploadFails) throw new Error('FTP failed'); },
     cleanupMessageFiles: async () => calls.push('cleanup'),
   };
   const source = (await readFile(new URL('../dist/routes/importxml.js', import.meta.url), 'utf8'))
     .replace(/^import[\s\S]*?;\s*/gm, '').replace('export async function', 'async function');
   const handler = new Function(...Object.keys(dependencies), `${source}\nreturn importXmlHandler;`)(...Object.values(dependencies));
-  const response = { statusCode: 200, headersSent: false, type() { return this; }, status(code) { this.statusCode = code; return this; }, send(code) { this.body = code; this.headersSent = true; return this; } };
-  await handler({}, response);
+  const response = { statusCode: 200, headersSent: false, set() { return this; }, type() { return this; }, status(code) { this.statusCode = code; return this; }, send(code) { this.body = code; this.headersSent = true; return this; } };
+  await handler({ method: 'GET' }, response);
   return { calls, xml, response };
 }
 
 test('result is valid XML and completion is recorded only after successful upload', async t => {
   t.mock.method(console, 'log', () => {});
   const { calls, xml, response } = await harness();
-  assert.deepEqual(calls, ['save:events.xml', 'write', 'upload', 'save:filelist.xml', 'cleanup']);
+  assert.deepEqual(calls, ['save:events.xml', 'publish', 'write', 'upload', 'save:filelist.xml', 'discard', 'cleanup']);
   assert.equal(new XMLParser().parse(xml).result.MessageNo, 42);
   assert.equal(response.body, 'DONE');
 });
@@ -86,5 +88,14 @@ test('CONTINUE and ALREADY explain why result.xml is not generated', async t => 
     assert.equal(response.body, code);
     assert.ok(!calls.includes('write'));
     assert.ok(logs.some(line => line.stage === 'response' && line.code === code && line.reason));
+  }
+});
+
+test('failed or missing events preserve the previous planned snapshot', async t => {
+  t.mock.method(console, 'log', () => {});
+  for (const options of [{ eventsFail: true }, { eventsMissing: true }]) {
+    const { calls, response } = await harness(options);
+    assert.equal(response.body, 'ERROR');
+    assert.ok(!calls.includes('publish'));
   }
 });

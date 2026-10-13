@@ -103,7 +103,7 @@ export interface DB {
 
   ediary_events: {
     id: Generated<number>;
-    ext_id: string;
+    ext_id: string | null;
     date: string;
     lesson: number;
     subject: number;

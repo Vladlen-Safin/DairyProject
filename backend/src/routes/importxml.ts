@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { XMLBuilder } from "fast-xml-parser";
+import { publishPlannedEvents, discardPlannedStage } from "../import/plannedEvents.js";
 import { config } from "../config.js";
 import { db } from "../db/index.js";
 import { readFileList } from "../xml/filelist.js";
@@ -147,6 +148,15 @@ async function handleImport(req: Request, res: Response) {
   }
 
 
+  const eventFiles = filelist.files.filter(f => f.type === "events");
+  const eventsSucceeded = eventFiles.length > 0 && eventFiles.every(f =>
+    results.some(r => r.file === f.filename && r.fail === 0 && !r.errors));
+  if (eventsSucceeded) {
+    await importStep("events.publishPlanned", () => publishPlannedEvents(db, messageno));
+  } else if (eventFiles.length) {
+    importLog("events.keepPreviousPlanned", { reason: "An events file failed; previous timetable preserved" });
+  }
+
   // The result object uses the `@_` prefix for XML attributes.  XMLBuilder
   // ignores that convention unless attribute processing is explicitly enabled;
   // without this option it serializes `@_version` and `@_encoding` as invalid
@@ -167,6 +177,9 @@ async function handleImport(req: Request, res: Response) {
   await importStep("result.upload", () => uploadResult());
 
   await importStep("message.markCompleted", () => upsertFileResult(db, "filelist.xml", messageno, [], 0, 0));
+  if (eventFiles.length) {
+    await importStep("events.discardStage", () => discardPlannedStage(db, messageno));
+  }
 
   // Шаг 4: сообщение полностью обработано - локальный кэш файлов этого messageno больше не нужен
   await importStep("cache.cleanup", () => cleanupMessageFiles(filelist.files.map((f) => f.filename)));

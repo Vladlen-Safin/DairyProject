@@ -32,6 +32,7 @@ test('full XML import preserves unchanged rows and applies parent/child changes'
     ({ db } = await import('../dist/db/index.js'));
     const migration = await readFile(new URL('../migrations/001_init.sql', import.meta.url), 'utf8');
     await sql.raw(migration).execute(db);
+    await sql.raw(await readFile(new URL('../migrations/003_planned_events.sql', import.meta.url), 'utf8')).execute(db);
     const { importBookFile } = await import('../dist/import/bookImporter.js');
     const { importGroupsFile } = await import('../dist/import/groupsImporter.js');
     const { importEventsFile } = await import('../dist/import/eventsFileImporter.js');
@@ -138,6 +139,7 @@ test('full XML import preserves unchanged rows and applies parent/child changes'
     assert.deepEqual(changedCalls.ediary_pupils, first.ediary_pupils);
     await run(importEventsFile, 'events.xml', '<events><event><id>event</id><delete>1</delete></event></events>', '9');
     assert.deepEqual((await snapshot()).ediary_events, []);
+
   } finally {
     if (db) await db.destroy();
     if (schemaCreated) await admin.query(`DROP SCHEMA "${schema}" CASCADE`);

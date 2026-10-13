@@ -4,6 +4,7 @@ import type { RawEvent } from "../xml/eventsTypes.js";
 import { asArray } from "../xml/eventsTypes.js";
 import { findSchoolyearIdForDate, type HelperCaches } from "./helperTables.js";
 import { syncChildren, upsertChanged } from "./syncRows.js";
+import type { EventSource } from "./plannedEvents.js";
 
 export interface ImportStats {
   success: number;
@@ -15,12 +16,13 @@ export async function importEventsBatch(
   caches: HelperCaches,
   batch: RawEvent[],
   errorLog: string[],
+  source?: EventSource,
 ): Promise<ImportStats> {
   return db.transaction().execute(async (trx) => {
     // Serialize event import batches without locking/writing every unchanged tuple.
     // Include the schema so isolated test imports never lock the live importer.
     await sql`select pg_advisory_xact_lock(746120, hashtext(current_schema()))`.execute(trx);
-    return importEventsBatchInTransaction(trx, caches, batch, errorLog);
+    return importEventsBatchInTransaction(trx, caches, batch, errorLog, source);
   });
 }
 
@@ -29,6 +31,7 @@ async function importEventsBatchInTransaction(
   caches: HelperCaches,
   batch: RawEvent[],
   errorLog: string[],
+  source?: EventSource,
 ): Promise<ImportStats> {
   const stats: ImportStats = { success: 0, fail: 0 };
 
@@ -45,9 +48,13 @@ async function importEventsBatchInTransaction(
     raw: RawEvent;
   }[] = [];
 
-  for (const ev of batch) {
+  for (const [index, ev] of batch.entries()) {
+    const externalId = ev.id?.trim() || null;
     if (ev.delete === "1") {
-      toDelete.push(ev.id);
+      if (!externalId) {
+        errorLog.push("Удаление занятия без id невозможно");
+        stats.fail++;
+      } else toDelete.push(externalId);
       continue;
     }
 
@@ -71,8 +78,8 @@ async function importEventsBatchInTransaction(
       continue;
     }
 
-    toUpsert.push({
-      ext_id: ev.id,
+    const row = {
+      ext_id: externalId,
       date: ev.date,
       lesson: Number(ev.lesson),
       subject: subjectId!,
@@ -80,8 +87,18 @@ async function importEventsBatchInTransaction(
       group_id: groupId!,
       cabinet: ev.cabinet || null,
       homework: ev.homework || null,
-      raw: ev,
-    });
+    };
+    if (!externalId) {
+      if (!source) throw new Error("Anonymous event requires message/file/position context");
+      await sql`insert into ediary_planned_events_stage (messageno, filename, position, payload)
+        values (${source.messageno}, ${source.filename}, ${source.firstPosition + index}, ${JSON.stringify(row)}::jsonb)
+        on conflict (messageno, filename, position) do update set payload = excluded.payload`.execute(db);
+      // Legacy behavior: anonymous timetable entries have homework, but no marks,
+      // comments or absences. Those belong to identified conducted lessons.
+      stats.success++;
+    } else {
+      toUpsert.push({ ...row, ext_id: externalId, raw: ev });
+    }
   }
 
   // Удаление событий, помеченных delete=1.
