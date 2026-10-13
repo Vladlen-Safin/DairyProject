@@ -6,6 +6,10 @@ import { authRouter } from "./routes/auth.js";
 
 const app = express();
 
+// До body parser и OPTIONS middleware: HEAD не запускает импорт,
+// остальные методы, кроме GET, получают 405 независимо от тела запроса.
+app.all("/importxml", importXmlHandler);
+
 app.use(express.json());
 
 // CORS для локальной разработки фронтенда (ng serve на :4200)
@@ -17,9 +21,6 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
-
-// Обмен с 1С
-app.all("/importxml", importXmlHandler);
 
 // Демо-авторизация фронтенда
 app.use("/api/auth", authRouter);

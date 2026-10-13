@@ -12,14 +12,14 @@
 
 ```
 1С ──FTP──> filelist.xml ──┐
-                           ├─> POST /importxml ──> парсинг ──> PostgreSQL
+                           ├─> GET /importxml ──> парсинг ──> PostgreSQL
    book / groups /         │        │
    events / final_marks ───┘        └──> result.xml ──FTP──> 1С
 
 Angular ──> GET /api/* (+ /api/auth/*) ──> PostgreSQL
 ```
 
-- `POST /importxml` — принимает запрос от 1С: качает файлы с FTP, парсит, пишет в БД,
+- `GET /importxml` — принимает запрос от 1С: качает файлы с FTP, парсит, пишет в БД,
   кладёт `result.xml` обратно на FTP. Отдаёт текстовый код (`DONE` / `CONTINUE` / …).
 - `GET /api/*` — read-API для фронтенда.
 - `POST /api/auth/*` — демо-авторизация (JWT access + httpOnly refresh-cookie).
@@ -111,7 +111,7 @@ curl http://localhost:3000/api/health
 ### 6. Импорт данных из 1С
 
 ```bash
-curl -X POST http://localhost:3000/importxml
+curl -X GET http://localhost:3000/importxml
 ```
 
 Ответ — текстовый код:
@@ -128,7 +128,7 @@ curl -X POST http://localhost:3000/importxml
 
 ```bash
 while true; do
-  r=$(curl -s -X POST http://localhost:3000/importxml); echo "$r"
+  r=$(curl -s -X GET http://localhost:3000/importxml); echo "$r"
   [ "$r" = "CONTINUE" ] || break
 done
 ```
@@ -136,7 +136,7 @@ done
 PowerShell:
 
 ```powershell
-do { $r = (Invoke-WebRequest -Method POST http://localhost:3000/importxml).Content; $r }
+do { $r = (Invoke-WebRequest -Method GET http://localhost:3000/importxml).Content; $r }
 while ($r -eq "CONTINUE")
 ```
 
@@ -246,7 +246,7 @@ SELECT (SELECT id FROM ediary_pupils ORDER BY id LIMIT 1), 'pupil', id FROM nu;
 
 | Метод | Путь | Описание |
 |---|---|---|
-| `POST` (любой) | `/importxml` | запустить/продолжить импорт. Если задан `IMPORT_API_TOKEN` — нужен заголовок `x-import-token` |
+| `GET` | `/importxml` | запустить/продолжить импорт. Если задан `IMPORT_API_TOKEN` — нужен заголовок `x-import-token` |
 
 ### Авторизация — `/api/auth`
 
@@ -377,3 +377,5 @@ backend/
   реальные файлы окажутся очень большими — перевести на потоковый разбор, как `events`.
 - **Нет системы версионирования миграций** — одна SQL-схема.
 - `seed.ts` и `/importxml` пишут в одни таблицы; не смешивать (seed делает `TRUNCATE`).
+
+Для `/importxml` метод HEAD возвращает пустой HTTP 200 без запуска импорта и без проверки токена. Остальные методы, кроме GET, возвращают HTTP 405 с `Allow: GET, HEAD`. Для GET проверка `IMPORT_API_TOKEN` сохраняется.

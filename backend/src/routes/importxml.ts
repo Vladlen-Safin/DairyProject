@@ -22,6 +22,16 @@ import {
 const NOT_FOUND_MESSAGE = "Не найден файл, либо номер сообщения в файле не соответствует выгрузке";
 
 export async function importXmlHandler(req: Request, res: Response) {
+  res.set("Cache-Control", "no-store");
+  if (req.method === "HEAD") {
+    res.status(200).end();
+    return;
+  }
+  if (req.method !== "GET") {
+    res.set("Allow", "GET, HEAD");
+    res.status(405).type("text/plain").send("METHOD_NOT_ALLOWED");
+    return;
+  }
   return withImportDiagnostics(async () => {
     const started = Date.now();
     importLog("request", { status: "START", cacheDir: path.resolve(config.xmlLocalCacheDir) });
