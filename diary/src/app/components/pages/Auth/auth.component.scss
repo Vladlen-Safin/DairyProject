@@ -3,14 +3,14 @@
 .auth-shell { width: 100%; max-width: 1040px; display: grid; grid-template-columns: 1fr 1fr; background: #fff; border: 1px solid #e7ecf5; border-radius: 28px; overflow: hidden; box-shadow: 0 20px 70px #19366b12; }
 .welcome-panel { position: relative; overflow: hidden; padding: 42px; background: linear-gradient(145deg, #0a4fb8, #073880); color: #fff; display: flex; flex-direction: column; }
 .welcome-panel::after { content: ''; position: absolute; width: 380px; height: 380px; border: 1px solid #ffffff16; border-radius: 50%; right: -250px; bottom: -140px; box-shadow: 0 0 0 55px #ffffff05, 0 0 0 110px #ffffff04; pointer-events: none; }
-.brand { display: flex; align-items: center; gap: 14px; line-height: 1.35; font-size: 15px; margin-bottom: 16px; }
+.brand { display: flex; align-items: center; gap: 14px; line-height: 1.35; font-size: 15px; margin-bottom: 30px; }
 .brand img { object-fit: contain; }
 .brand strong { font-size: 24px; font-weight: 700; }
 .welcome-copy { margin: 54px 0 32px; }
 .eyebrow { font-size: 10px; letter-spacing: 2px; color: #bdd6ff; font-weight: 600; }
 h1 { font-size: 36px; line-height: 1.25; letter-spacing: -.8px; margin: 14px 0 18px; font-weight: 700; }
 .welcome-copy p { font-size: 14px; line-height: 1.8; color: #d4e4ff; margin: 0; }
-.features { display: grid; gap: 20px; }
+.features { display: grid; gap: 30px; }
 .features > div { display: flex; align-items: center; gap: 14px; font-size: 14px; }
 .features .material-symbols-rounded { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid #ffffff26; border-radius: 12px; background: #ffffff0c; }
 .features small { display: block; font-size: 12px; color: #d4e4ff; margin-top: 4px; }
@@ -48,7 +48,7 @@ button:focus-visible { outline: 3px solid #80acee; outline-offset: 3px; }
   .auth-page { display: block; padding: 0; background: #fff; }
   .auth-shell { display: block; border: 0; border-radius: 0; box-shadow: none; }
   .welcome-panel { padding: calc(24px + env(safe-area-inset-top, 0px)) 24px 28px; border-radius: 0 0 26px 26px; }
-  .brand { font-size: 13px; gap: 12px; } .brand img { width: 48px; height: 48px; } .brand strong { font-size: 21px; }
+  .brand { font-size: 13px; gap: 12px; flex-direction: column; margin-bottom: 15px; } .brand img { width: 48px; height: 48px; } .brand strong { font-size: 21px; }
   .welcome-copy { margin: 24px 0 0; } .eyebrow, .features, .welcome-footer { display: none; }
   h1 { font-size: 27px; margin: 0 0 10px; } h1 br { display: none; }
   .welcome-copy p { font-size: 13px; line-height: 1.6; max-width: 320px; }
