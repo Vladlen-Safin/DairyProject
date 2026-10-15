@@ -1,45 +1,105 @@
 <div class="grades-page">
   <h1 class="page-title">Итоговые оценки</h1>
   @if (loading) {
-    <div class="status-card" role="status">Загрузка оценок…</div>
+    <div class="status-card" role="status">Загрузка текущих и итоговых оценок…</div>
   } @else if (error) {
     <div class="status-card" role="alert">{{ error }}</div>
   } @else {
-    <div class="grades-card">
-      <div class="card-heading">
-        <h2>Успеваемость по предметам</h2>
-        <span>{{ schoolyear }}</span>
+    <div class="filters-card">
+      <div class="filter-heading"><h2>Период и предметы</h2><button type="button" class="reset" (click)="reset()">Сбросить фильтры</button></div>
+      <div class="filters">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Период</mat-label>
+          <mat-select [(ngModel)]="mode" (selectionChange)="applyPeriod()">
+            <mat-option value="month">Месяц</mat-option>
+            <mat-option value="term" [disabled]="!terms.length">Четверть / учебный период</mat-option>
+            <mat-option value="year">Учебный год</mat-option>
+            <mat-option value="custom">Свой период</mat-option>
+          </mat-select>
+        </mat-form-field>
+        @if (mode === 'month') {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Месяц</mat-label>
+            <mat-select [(ngModel)]="month" (selectionChange)="applyPeriod()">
+              @for (m of months; track m.id) { <mat-option [value]="m.id">{{ m.label }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+        }
+        @if (mode === 'term') {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Учебный период</mat-label>
+            <mat-select [(ngModel)]="term" (selectionChange)="applyPeriod()">
+              @for (t of terms; track t.id) { <mat-option [value]="t.id">{{ t.name }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+        }
+        @if (mode === 'custom') {
+          <label class="date-field">С даты<input type="date" [(ngModel)]="from" (ngModelChange)="refresh()" [min]="yearFrom" [max]="yearTo" aria-describedby="range-error" /></label>
+          <label class="date-field">По дату<input type="date" [(ngModel)]="to" (ngModelChange)="refresh()" [min]="yearFrom" [max]="yearTo" aria-describedby="range-error" /></label>
+        }
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="subject-filter">
+          <mat-label>Предметы</mat-label>
+          <mat-select multiple [(ngModel)]="selectedSubjects" (selectionChange)="refresh()" placeholder="Все предметы">
+            @for (subject of subjects; track subject) { <mat-option [value]="subject">{{ subject }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
       </div>
-      @if (rows.length) {
-        <div class="table-scroll" tabindex="0" role="region" aria-label="Оценки по четвертям, годовые и итоговые оценки">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col" class="subject">Предмет</th>
-                @for (term of terms; track term.id) {
-                  <th scope="col">{{ term.name }}</th>
-                }
-                <th scope="col" class="year-column">Годовая оценка</th>
-                <th scope="col" class="final-column">Итоговая оценка</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of rows; track row.subject) {
-                <tr>
-                  <th scope="row" class="subject">{{ row.subject }}</th>
-                  @for (mark of row.terms; track $index) {
-                    <td><span class="grade" [class.empty]="mark === '—'">{{ mark }}</span></td>
-                  }
-                  <td class="year-column"><span class="grade" [class.empty]="row.year === '—'">{{ row.year }}</span></td>
-                  <td class="final-column"><span class="grade final-grade" [class.empty]="row.final === '—'">{{ row.final }}</span></td>
-                </tr>
-              }
-            </tbody>
-          </table>
+      <div class="filter-footer"><span>Без выбора предметов показываются все.</span>
+        <div class="view-toggle" role="group" aria-label="Вид таблицы">
+          <button type="button" [class.active]="view === 'full'" [attr.aria-pressed]="view === 'full'" (click)="view = 'full'; refresh()">Полная таблица</button>
+          <button type="button" [class.active]="view === 'compact'" [attr.aria-pressed]="view === 'compact'" (click)="view = 'compact'; refresh()">Компактно</button>
         </div>
-      } @else {
-        <div class="empty-state">За этот учебный год пока нет четвертных, годовых или итоговых оценок.</div>
-      }
+      </div>
+      <div id="range-error" role="alert" class="range-error">{{ rangeError }}</div>
+      <div class="export-actions" [attr.aria-busy]="exporting">
+        <button type="button" [disabled]="exporting || !!rangeError || !rows.length" (click)="exportPdf('filtered')">PDF по текущим фильтрам</button>
+        <button type="button" [disabled]="exporting || !subjects.length" (click)="exportPdf('year')">PDF за весь учебный год</button>
+        <span role="status">{{ exporting ? 'Формируем PDF…' : 'PDF всегда содержит полную таблицу с датами.' }}</span>
+      </div>
+      @if (exportError) { <p class="range-error" role="alert">{{ exportError }}</p> }
     </div>
+    @if (!rangeError) {
+      <div class="grades-card">
+        <div class="card-heading"><div><h2>Текущие и итоговые оценки</h2><p>{{ schoolyear }} · {{ periodLabel }}</p></div><span aria-live="polite">Предметов: {{ rows.length }}</span></div>
+        <p class="table-note">Текущие оценки, пропуски и средний балл — за выбранные даты. Четвертные — за пересекающиеся учебные периоды. Годовая, экзамен и итоговая — за весь учебный год.</p>
+        @if (rows.length) {
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Таблица успеваемости, доступна горизонтальная прокрутка">
+            <table mat-table [dataSource]="rows" class="grades-table" [class.compact]="view === 'compact'">
+              <ng-container matColumnDef="subject" sticky>
+                <th mat-header-cell *matHeaderCellDef scope="col" class="subject">Предмет</th>
+                <td mat-cell *matCellDef="let row" class="subject">{{ row.subject }}</td>
+              </ng-container>
+              <ng-container matColumnDef="marks">
+                <th mat-header-cell *matHeaderCellDef scope="col">Текущие оценки</th>
+                <td mat-cell *matCellDef="let row" class="current-marks">
+                  @for (mark of row.marks; track $index) {
+                    <button type="button" class="grade" [matTooltip]="mark.details" #tip="matTooltip" (click)="tip.toggle()" [attr.aria-label]="mark.value + ', ' + mark.details">{{ mark.value }}</button>
+                  } @empty { <span class="empty">—</span> }
+                </td>
+              </ng-container>
+              @for (date of dates; track date.id) {
+                <ng-container [matColumnDef]="date.id">
+                  <th mat-header-cell *matHeaderCellDef scope="col" class="date-column"><span class="month-label">{{ date.month }}</span>{{ date.label }}</th>
+                  <td mat-cell *matCellDef="let row" class="date-column">
+                    @for (mark of row.dates[date.id] || []; track $index) {
+                      <button type="button" class="grade" [matTooltip]="mark.details" #tip="matTooltip" (click)="tip.toggle()" [attr.aria-label]="mark.value + ', ' + mark.details">{{ mark.value }}</button>
+                    } @empty { <span class="empty">—</span> }
+                  </td>
+                </ng-container>
+              }
+              <ng-container matColumnDef="absences"><th mat-header-cell *matHeaderCellDef scope="col">Пропуски<br /><small>пар</small></th><td mat-cell *matCellDef="let row">{{ row.absences }}</td></ng-container>
+              <ng-container matColumnDef="average"><th mat-header-cell *matHeaderCellDef scope="col">Средний балл<br /><small>расчётный</small></th><td mat-cell *matCellDef="let row"><strong>{{ row.average }}</strong></td></ng-container>
+              @for (column of finalsColumns; track column.id) {
+                <ng-container [matColumnDef]="column.id">
+                  <th mat-header-cell *matHeaderCellDef scope="col" class="final-column">{{ column.label }}</th>
+                  <td mat-cell *matCellDef="let row" class="final-column"><span class="grade" [class.empty]="row.finals[column.id] === '—'">{{ row.finals[column.id] }}</span></td>
+                </ng-container>
+              }
+              <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: columns"></tr>
+            </table>
+          </div>
+          <p class="table-note">Нажмите на текущую оценку, чтобы увидеть дату, пару, преподавателя и комментарий. Средний балл считается без итоговых и текстовых оценок; он не является прогнозом четвертной оценки.</p>
+        } @else { <div class="empty-state">Нет предметов для отображения. Попробуйте сбросить фильтры.</div> }
+      </div>
+    }
   }
 </div>

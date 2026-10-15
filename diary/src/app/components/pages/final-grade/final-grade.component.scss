@@ -1,32 +1,59 @@
-:host { display: block; background: #F5F7FC; }
-.grades-page { padding: 32px; background: #F5F7FC; min-height: calc(100vh - 170px); color: #1F2D5C; }
+:host { display: block; background: #f5f7fc; }
+.grades-page { padding: 32px; max-width: 94%; margin: auto; color: #1f2d5c; }
 .page-title { margin: 0 0 24px; font-size: 36px; font-weight: 700; }
-.grades-card, .status-card { background: #FFFFFF; border-radius: 18px; box-shadow: 0 6px 18px rgba(25, 42, 70, .08); overflow: hidden; }
-.status-card, .empty-state { padding: 24px; color: #42526E; }
-.card-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 22px 24px; border-bottom: 1px solid #E7ECF5; }
-.card-heading h2 { margin: 0; font-size: 18px; font-weight: 600; }
-.card-heading span { font-size: 14px; color: #5F6B84; }
-.table-scroll { overflow-x: auto; }
-.table-scroll:focus-visible { outline: 3px solid #80ACEE; outline-offset: -3px; }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 18px 24px; text-align: center; border-right: 1px solid #E7ECF5; border-bottom: 1px solid #E7ECF5; }
-thead th { background: #F7F9FD; font-size: 14px; font-weight: 600; white-space: nowrap; }
-.subject { text-align: left; min-width: 220px; }
-tbody th { font-size: 15px; font-weight: 500; }
-th:last-child, td:last-child { border-right: 0; }
-tbody tr:last-child > * { border-bottom: 0; }
-.final-column { background: #F0F5FF; }
-.year-column { background: #F7F9FD; }
-.grade { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; min-height: 34px; padding: 4px 8px; border-radius: 8px; font-size: 16px; font-weight: 700; background: #EDF4FF; color: #0B5ED7; white-space: nowrap; }
-.final-grade { background: #1565F9; color: white; }
-.grade.empty { background: transparent; color: #8793A8; font-weight: 400; }
-@media (min-width: 769px) {
-  .grades-page { max-width: 90%; margin: 0 auto; }
-}
-
+.grades-card, .filters-card, .status-card { background: #fff; border-radius: 18px; box-shadow: 0 6px 18px #192a4614; overflow: hidden; }
+.filters-card { padding: 20px 24px; margin-bottom: 20px; }
+.filter-heading, .filter-footer, .card-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.filter-heading { margin-bottom: 20px; }
+.filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; }
+mat-form-field { width: 240px; max-width: 100%; }
+.subject-filter { flex: 1; min-width: 220px; }
+button { font: inherit; cursor: pointer; }
+.reset { background: transparent; color: #0b5ed7; border: 0; min-height: 44px; padding: 8px; font-size: 13px; }
+.date-field { display: grid; gap: 5px; color: #42526e; font-size: 12px; }
+.date-field input { min-height: 56px; padding: 10px; border: 1px solid #8793a8; border-radius: 4px; background: #fff; color: #1f2d5c; font-size: 16px; min-width: 0; }
+.filter-footer { margin-top: 16px; font-size: 12px; color: #5f6b84; }
+.view-toggle { display: flex; gap: 6px; }
+.view-toggle button { min-height: 44px; padding: 8px 14px; border: 1px solid #d9e1f2; border-radius: 10px; background: #fff; color: #1f2d5c; }
+.view-toggle button.active { background: #0b5ed7; color: #fff; border-color: #0b5ed7; }
+button:focus-visible, input:focus-visible, .table-scroll:focus-visible { outline: 3px solid #80acee; outline-offset: -3px; }
+.range-error { color: #b32b35; font-size: 13px; }
+.range-error:not(:empty) { margin-top: 12px; }
+.export-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 18px; padding-top: 16px; border-top: 1px solid #e7ecf5; }
+.export-actions button { border: 1px solid #0b5ed7; background: #fff; color: #0b5ed7; border-radius: 10px; padding: 10px 14px; min-height: 44px; font-size: 13px; }
+.export-actions button:first-child { background: #0b5ed7; color: #fff; }
+.export-actions button:disabled { opacity: .5; cursor: default; }
+.export-actions span { font-size: 12px; color: #5f6b84; }
+.card-heading { padding: 20px 24px; border-bottom: 1px solid #e7ecf5; }
+.card-heading p { margin: 6px 0 0; font-size: 13px; color: #5f6b84; }
+.card-heading > span { font-size: 13px; }
+.table-note { margin: 0; padding: 14px 24px; font-size: 12px; color: #5f6b84; line-height: 1.6; }
+.table-scroll { overflow: auto; max-height: 70vh; }
+.grades-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; }
+.grades-table th, .grades-table td { border-right: 1px solid #e7ecf5; border-bottom: 1px solid #e7ecf5; padding: 12px; text-align: center; color: #1f2d5c; }
+.grades-table th { background: #f7f9fd; font-size: 13px; white-space: nowrap; }
+.grades-table td { font-size: 14px; }
+.grades-table .subject { min-width: 180px; max-width: 220px; text-align: left; background: #fff; overflow-wrap: anywhere; }
+.grades-table th.subject { background: #f7f9fd; }
+.grades-table .final-column { background: #f0f5ff; }
+.current-marks { min-width: 240px; max-width: 440px; }
+.grade { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; min-height: 32px; padding: 4px 7px; margin: 3px; border: 0; border-radius: 7px; background: #edf4ff; color: #0b5ed7; font-weight: 700; font-size: 15px; white-space: nowrap; }
+.empty, .grade.empty { background: transparent; color: #8793a8; font-weight: 400; }
+.date-column { min-width: 75px; }
+.month-label { display: block; margin-bottom: 6px; font-size: 10px; color: #5f6b84; }
+.status-card, .empty-state { padding: 24px; }
 @media (max-width: 768px) {
-  .grades-page { padding: 16px; }
-  .page-title { font-size: 30px; }
-  .card-heading { padding: 18px; }
-  th, td { padding: 14px 18px; }
+  .grades-page { max-width: 100%; padding: 20px 12px; }
+  .page-title { font-size: 24px; margin-bottom: 18px; }
+  .filters-card, .card-heading { padding: 16px; }
+  .filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  mat-form-field, .subject-filter { width: 100%; min-width: 0; }
+  .view-toggle { width: 100%; }
+  .view-toggle button { flex: 1; }
+  .table-note { padding: 12px 16px; }
+  .grades-table .subject { min-width: 115px; max-width: 135px; font-size: 12px; }
+  .grades-table th, .grades-table td { padding: 8px; }
+  .current-marks { min-width: 180px; }
+  .grade { min-height: 36px; }
 }
