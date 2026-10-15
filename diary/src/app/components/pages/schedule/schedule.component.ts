@@ -251,7 +251,7 @@ export class ScheduleComponent implements OnInit {
           : 'Время не указано',
         subject: e.subject,
         teacher: e.teacher,
-        room: e.cabinet ?? '—',
+        room: e.cabinet?.trim() || '—',
       }));
   }
 

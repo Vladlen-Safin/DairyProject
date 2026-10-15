@@ -21,13 +21,14 @@ button:focus-visible, .table-scroll:focus-visible { outline: 3px solid #80acee; 
 .current-date { padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e7ecf5; }
 .day { font-size: 18px; font-weight: 600; margin: 0; }
 .day-arrow { display: none; width: 44px; height: 44px; flex: 0 0 44px; border: 0; border-radius: 8px; background: transparent; }
-.schedule-grid { display: grid; grid-template-columns: 80px 170px minmax(0,1fr) minmax(0,1fr); }
+.schedule-grid { display: grid; grid-template-columns: 64px 130px minmax(0,1fr) minmax(0,1fr) minmax(100px,.5fr); }
 .grid-header, .cell { padding: 16px; border-right: 1px solid #e7ecf5; border-bottom: 1px solid #e7ecf5; }
 .grid-header { background: #f7f9fd; font-size: 14px; font-weight: 600; }
 .cell { display: flex; align-items: center; min-width: 0; min-height: 72px; font-size: 14px; overflow-wrap: anywhere; }
 .pair-cell { flex-direction: column; justify-content: center; text-align: center; gap: 5px; }
 .pair-number { color: #0b5ed7; font-size: 18px; font-weight: 700; }
-.pair-time, .teacher-name, .lesson-time { font-size: 12px; font-weight: 400; color: #5f6b84; }
+.pair-time, .teacher-name, .lesson-time, .room-name { font-size: 12px; font-weight: 400; color: #5f6b84; }
+.room-cell { border-right: 0; }
 .mobile-detail, .weekly-mobile, .mobile-day-picker { display: none; }
 .schedule-empty { padding: 24px; color: #5f6b84; font-size: 14px; }
 .table-scroll { overflow-x: auto; }
@@ -63,7 +64,7 @@ button:focus-visible, .table-scroll:focus-visible { outline: 3px solid #80acee; 
   .day { font-size: 14px; line-height: 1.5; text-align: center; }
   .day-arrow { display: flex; }
   .schedule-grid, .mobile-lesson { display: grid; grid-template-columns: minmax(100px,35%) minmax(0,1fr); }
-  .grid-header, .time-cell, .teacher-cell, .weekly-desktop { display: none; }
+  .grid-header, .time-cell, .teacher-cell, .room-cell, .weekly-desktop { display: none; }
   .cell { min-height: 76px; padding: 12px 10px; }
   .subject-cell { flex-direction: column; align-items: flex-start; justify-content: center; gap: 5px; font-size: 14px; font-weight: 600; border-right: 0; }
   .mobile-detail { display: block; }
