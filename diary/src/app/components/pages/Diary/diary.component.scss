@@ -1,5 +1,6 @@
 :host {
     display: block;
+    background: #F5F7FC;
 }
 
 .period-section {
@@ -278,7 +279,7 @@
 
 .control {
 
-    color: #F44336;
+    color: #B45309;
 }
 
 .home {
@@ -373,7 +374,7 @@
 
 .dot.control {
 
-    background: #F44336;
+    background: #B45309;
 }
 
 .dot.homework {
@@ -543,7 +544,7 @@
 
 .mark-chip.answer   { background: #1565F9; }
 .mark-chip.practice { background: #14B8D4; }
-.mark-chip.control  { background: #F44336; }
+.mark-chip.control  { background: #B45309; }
 .mark-chip.homework { background: #43A047; }
 .mark-chip.lab      { background: #FFB300; }
 .mark-chip.test     { background: #7E57C2; }
@@ -595,7 +596,8 @@
     .mark-chip { min-width: 0; height: auto; padding: 0 2px; border-radius: 0; background: transparent; }
     .mark-chip.answer { color: #1565f9; background: transparent; }
     .mark-chip.practice { color: #009cb8; background: transparent; }
-    .mark-chip.control, .mark-chip.absent { color: #d32f2f; background: transparent; }
+    .mark-chip.control { color: #B45309; background: transparent; }
+    .mark-chip.absent { color: #d32f2f; background: transparent; }
     .mark-chip.homework { color: #26822a; background: transparent; }
     .mark-chip.lab { color: #966600; background: transparent; }
     .mark-chip.test { color: #7e57c2; background: transparent; }

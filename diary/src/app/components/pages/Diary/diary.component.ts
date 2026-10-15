@@ -66,7 +66,7 @@ function ddmm(iso: string): string {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './diary.component.html',
-  styleUrls: ['./diary.component.scss'],
+  styleUrls: ['./diary.component.scss', './diary-desktop.scss'],
 })
 export class DiaryComponent implements OnInit {
   private data = inject(DataService);
@@ -148,6 +148,7 @@ export class DiaryComponent implements OnInit {
   }
 
   rows: DiaryRow[] = [];
+  desktopDays: { date: string; slots: { number: number; events: MyEvent[] }[] }[] = [];
   finalRows: { subject: string; value: string }[] = [];
 
   ngOnInit(): void {
@@ -287,12 +288,23 @@ export class DiaryComponent implements OnInit {
     const week = this.selectedWeek;
     if (!week) {
       this.rows = [];
+      this.desktopDays = [];
       return;
     }
 
     // /my-events уже отдаёт только занятия и оценки текущего ученика - фильтровать
     // по pupil_ext_id больше не нужно, бэкенд сам это делает (по всем его группам).
     const inWeek = this.allEvents.filter((e) => e.date >= week.from && e.date <= week.to);
+    this.desktopDays = WEEKDAYS.map((_, index) => {
+      const date = addDays(week.from, index);
+      const events = inWeek.filter((event) => event.date === date);
+      // Пустые пары сохраняют место в дневнике. Дополнительные пары не теряем.
+      const numbers = [...new Set([1, 2, 3, 4, 5, ...events.map((event) => event.lesson)])]
+        .sort((a, b) => a - b);
+      return { date, slots: numbers.map((number) => ({
+        number, events: events.filter((event) => event.lesson === number),
+      })) };
+    });
     const bySubject = new Map<string, MyEvent[]>();
     for (const e of inWeek) {
       (bySubject.get(e.subject) ?? bySubject.set(e.subject, []).get(e.subject)!).push(e);
@@ -323,6 +335,14 @@ export class DiaryComponent implements OnInit {
         value: fe.marks.find((m) => m.pupil_ext_id === pupilExt)?.value ?? '—',
       }))
       .sort((a, b) => a.subject.localeCompare(b.subject, 'ru'));
+  }
+
+  eventDetails(event: MyEvent): string {
+    const homework = (event.homework ?? '').trim();
+    return [
+      homework && homework !== '—' ? homework : '',
+      ...event.comments.map((comment) => comment.text.trim()),
+    ].filter(Boolean).join('\n');
   }
 
   /** css-класс точки/чипа по тексту комментария (совпадает с легендой). */

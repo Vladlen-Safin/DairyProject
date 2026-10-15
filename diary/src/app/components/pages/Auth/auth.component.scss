@@ -57,3 +57,5 @@ button:focus-visible { outline: 3px solid #80acee; outline-offset: 3px; }
   .login-help { margin-top: 24px; padding-top: 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+.brand img { width: 250px; height: auto; max-width: 100%; }

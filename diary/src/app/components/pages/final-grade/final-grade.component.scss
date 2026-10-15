@@ -1,4 +1,4 @@
-:host { display: block; }
+:host { display: block; background: #F5F7FC; }
 .grades-page { padding: 32px; background: #F5F7FC; min-height: calc(100vh - 170px); color: #1F2D5C; }
 .page-title { margin: 0 0 24px; font-size: 36px; font-weight: 700; }
 .grades-card, .status-card { background: #FFFFFF; border-radius: 18px; box-shadow: 0 6px 18px rgba(25, 42, 70, .08); overflow: hidden; }
@@ -20,6 +20,10 @@ tbody tr:last-child > * { border-bottom: 0; }
 .grade { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; min-height: 34px; padding: 4px 8px; border-radius: 8px; font-size: 16px; font-weight: 700; background: #EDF4FF; color: #0B5ED7; white-space: nowrap; }
 .final-grade { background: #1565F9; color: white; }
 .grade.empty { background: transparent; color: #8793A8; font-weight: 400; }
+@media (min-width: 769px) {
+  .grades-page { max-width: 90%; margin: 0 auto; }
+}
+
 @media (max-width: 768px) {
   .grades-page { padding: 16px; }
   .page-title { font-size: 30px; }

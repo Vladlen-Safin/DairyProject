@@ -1,4 +1,4 @@
-:host { display: block; }
+:host { display: block; background: #F5F7FC; }
 .schedule-page { padding: 32px; background: #f5f7fc; color: #1f2d5c; }
 .page-title { margin: 0 0 24px; font-size: 36px; font-weight: 700; }
 .toolbar-card, .schedule-card { background: #fff; border-radius: 18px; box-shadow: 0 6px 18px rgba(25,42,70,.08); margin-bottom: 24px; }
@@ -41,6 +41,10 @@ button:focus-visible, .table-scroll:focus-visible { outline: 3px solid #80acee; 
 .week-lesson + .week-lesson { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e7ecf5; }
 .lesson-time { color: #0b5ed7; }
 .empty-slot { display: block; text-align: center; color: #8793a8; }
+@media (min-width: 769px) {
+  .schedule-page { max-width: 90%; margin: 0 auto; }
+}
+
 @media (max-width: 768px) {
   .schedule-page { padding: 20px 12px; }
   .page-title { font-size: 24px; margin-bottom: 20px; }

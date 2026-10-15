@@ -105,45 +105,43 @@
       </div>
     } @else {
       <!-- Недельная сетка -->
-      <div class="diary-card weekly-card" (touchstart)="onTouchStart($event)"
-           (touchend)="onTouchEnd($event)" (touchcancel)="cancelSwipe()">
-        <div class="diary-table week-table">
-          <div class="subject-header">Предмет</div>
-          @for (i of [0,1,2,3,4]; track i) {
-            <div class="day-header" [class.mobile-hidden-day]="i !== selectedDay">
-              <div>{{ dayLabel(i) }}</div>
-              <span>{{ dayDate(i) }}</span>
-              <div class="day-columns">
-                <span>Оценка</span>
-                <span>ДЗ / комментарий</span>
-              </div>
-            </div>
-          }
-
-          @for (row of rows; track row.subject) {
-            <div class="subject-cell">{{ row.subject }}</div>
-            @for (cell of row.days; track cell.date; let i = $index) {
-              <div class="day-cell" [class.missing]="cell.missing" [class.mobile-hidden-day]="i !== selectedDay">
-                <div class="marks">
-                  @for (m of cell.marks; track $index) {
-                    <span [class]="'mark-chip ' + markClass(m.comment)"
-                          [title]="m.comment || ''">{{ m.value }}</span>
+      <div class="desktop-spread" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)" (touchcancel)="cancelSwipe()">
+        @for (day of desktopDays; track day.date; let i = $index) {
+          <section class="spread-day" [class.mobile-hidden-day]="i !== selectedDay" [style.grid-column]="i < 3 ? 1 : 2"
+                   [style.grid-row]="i < 3 ? i + 1 : i - 2">
+            <h2>{{ dayLabel(i) }} <time [attr.datetime]="day.date">{{ dayDate(i) }}</time></h2>
+            <table>
+              <caption class="spread-caption">{{ dayLabel(i) }}, {{ dayDate(i) }}</caption>
+              <colgroup><col class="pair-number"><col class="pair-subject"><col class="pair-mark"><col></colgroup>
+              <thead><tr><th scope="col">Пара</th><th scope="col">Предмет</th><th scope="col">Оценки</th><th scope="col">Домашнее задание / комментарии</th></tr></thead>
+              <tbody>
+                @for (slot of day.slots; track slot.number) {
+                  @if (!slot.events.length) {
+                    <tr><th scope="row">{{ slot.number }}</th><td><span class="empty-subject" aria-label="Нет занятия">—</span></td><td class="spread-marks">—</td><td>—</td></tr>
+                  } @else {
+                    @for (event of slot.events; track $index; let first = $first) {
+                      <tr>
+                        @if (first) { <th scope="rowgroup" [attr.rowspan]="slot.events.length">{{ slot.number }}</th> }
+                        <td><div class="subject-text" [title]="event.subject">{{ event.subject }}</div></td>
+                        <td class="spread-marks">
+                          @for (mark of event.marks; track $index) {
+                            <span [class]="'mark-chip ' + markClass(mark.comment)" [title]="mark.comment || ''">{{ mark.value }}</span>
+                          }
+                          @if (event.missing) { <span class="mark-chip absent" title="Отсутствие">Н</span> }
+                        </td>
+                        <td class="spread-homework">
+                          @if (eventDetails(event)) {
+                            <div class="assignment-text">{{ eventDetails(event) }}</div>
+                          }
+                        </td>
+                      </tr>
+                    }
                   }
-                  @if (cell.missing) { <span class="mark-chip absent">Н</span> }
-                </div>
-                <div class="hw">
-                  @if (cell.homework) { <div>{{ cell.homework }}</div> }
-                  @if (cell.note) { <div class="note">{{ cell.note }}</div> }
-                </div>
-              </div>
-            }
-          }
-
-          @if (!rows.length) {
-            <div class="subject-cell">На этой неделе занятий нет</div>
-            @for (i of [0,1,2,3,4]; track i) { <div class="day-cell" [class.mobile-hidden-day]="i !== selectedDay"></div> }
-          }
-        </div>
+                }
+              </tbody>
+            </table>
+          </section>
+        }
       </div>
       <nav class="day-navigation" aria-label="Переключение дня">
         <button type="button" aria-label="Предыдущий день" [disabled]="!canMoveDay(-1)" (click)="moveDay(-1)">

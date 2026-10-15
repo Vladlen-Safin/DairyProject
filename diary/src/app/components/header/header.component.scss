@@ -345,7 +345,7 @@
 
 .navigation a.active {
 
-    background: white;
+    background: #F5F7FC;
 
     color: #0A4FB8;
 
@@ -577,4 +577,18 @@
     .desktop-nav-label { display: none; }
     .mobile-nav-label { display: inline; }
     .navigation a:focus-visible { outline: 2px solid #0b5ed7; outline-offset: -3px; }
+}
+
+.logo-info .logo { width: 250px; max-width: 100%; height: auto; display: block; }
+@media (min-width: 993px) {
+  .header { min-height: 205px; }
+  .header-top { height: 150px; }
+}
+@media (max-width: 768px) {
+  .header-top { grid-template-columns: minmax(0, 1fr) 150px; }
+  .logo-info .logo { width: 150px; }
+}
+@media (max-width: 360px) {
+  .header-top { grid-template-columns: minmax(0, 1fr) 130px; }
+  .logo-info .logo { width: 130px; }
 }
